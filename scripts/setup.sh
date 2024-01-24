@@ -29,8 +29,8 @@ rm -rf "${TARGET_DIR_ABSOLUTE_PATH:?}"/* "${TARGET_DIR_ABSOLUTE_PATH:?}"/.*
 SRC_DIR="${TARGET_DIR_ABSOLUTE_PATH}/src"
 TEST_DIR="${TARGET_DIR_ABSOLUTE_PATH}/tests"
 
-WEBAPI_NAME="${PROJECT_NAME}.WebApi"
-LIBRARY_NAME="${PROJECT_NAME}.Lib"
+WEBAPI_NAME="${PROJECT_NAME}.MyWebApi"
+LIBRARY_NAME="${PROJECT_NAME}.MyLib"
 
 # General files ---------------------------------------------------------------
 echo "==> Creating general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
@@ -100,3 +100,4 @@ dotnet sln add "${SRC_DIR}/${WEBAPI_NAME}"
 dotnet sln add "${TEST_DIR}/${LIBRARY_TEST_NAME}"
 
 dotnet restore
+dotnet test
