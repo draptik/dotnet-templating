@@ -13,7 +13,7 @@ if [ $# -eq 2 ]; then
     PROJECT_NAME=$1
     TARGET_DIR=$2
 else
-    echo "==> No arguments provided. Provide 2 arguments (first: project-name, second: target-folder). Using default values:"
+    echo "==> No arguments provided. You can provide 2 arguments (first: project-name, second: target-folder). Using default values:"
     PROJECT_NAME=$DEFAULT_PROJECT_NAME
     TARGET_DIR=$DEFAULT_TARGET_DIR
 fi
@@ -47,7 +47,14 @@ echo "==> Created general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
 # Create global.json
 echo "==> Creating global.json in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
 dotnet new globaljson --sdk-version "8.0.0" --roll-forward "latestMajor" --output "${TARGET_DIR_ABSOLUTE_PATH}"
+echo "==> Created global.json in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
 
+# Create gitignore
+echo "==> Creating gitignore in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
+dotnet new gitignore --output "${TARGET_DIR_ABSOLUTE_PATH}"
+echo "==> Created gitignore in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
+
+# Create solution 
 echo "==> Creating solution: '${PROJECT_NAME}' in folder '${TARGET_DIR_ABSOLUTE_PATH}'..."
 dotnet new sln -n "${PROJECT_NAME}" -o "${TARGET_DIR_ABSOLUTE_PATH}"
 echo "==> Created solution: '${PROJECT_NAME}' in folder '${TARGET_DIR_ABSOLUTE_PATH}'"
