@@ -36,15 +36,17 @@ LIBRARY_NAME="${PROJECT_NAME}.MyLib"
 # General files ---------------------------------------------------------------
 echo "==> Creating general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
 cp "${RESOURCE_DIR}/.gitattributes.template" "${TARGET_DIR_ABSOLUTE_PATH}/.gitattributes"
-cp "${RESOURCE_DIR}/.global.json.template" "${TARGET_DIR_ABSOLUTE_PATH}/global.json"
+# cp "${RESOURCE_DIR}/.global.json.template" "${TARGET_DIR_ABSOLUTE_PATH}/global.json"
 mkdir "${TARGET_DIR_ABSOLUTE_PATH}/.config"
 cp "${RESOURCE_DIR}/.config/dotnet-tools.json" "${TARGET_DIR_ABSOLUTE_PATH}/.config/dotnet-tools.json"
-
 cp "${RESOURCE_DIR}/Directory.Build.props.template" "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Build.props"
-# cp "${RESOURCE_DIR}/Directory.Packages.props.template" "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Packages.props"
 
 # TODO add .editorconfig
 echo "==> Created general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
+
+# Create global.json
+echo "==> Creating global.json in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
+dotnet new globaljson --sdk-version "8.0.0" --roll-forward "latestMajor" --output "${TARGET_DIR_ABSOLUTE_PATH}"
 
 echo "==> Creating solution: '${PROJECT_NAME}' in folder '${TARGET_DIR_ABSOLUTE_PATH}'..."
 dotnet new sln -n "${PROJECT_NAME}" -o "${TARGET_DIR_ABSOLUTE_PATH}"
