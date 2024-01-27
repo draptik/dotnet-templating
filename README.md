@@ -23,3 +23,11 @@ Idea:
 - `tests`
   - xunit test project for WebAPI project
   - xunit test project for library project
+
+## Status Quo
+
+This is a chicken and egg problem.
+
+### Questions
+
+Is there a way of setting up a new dotnet solution from the command line using 'dotnet new ...' which respects/includes 'Directory.{Build,Packages}.props'? #dotnet
