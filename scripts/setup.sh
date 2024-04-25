@@ -1,6 +1,8 @@
 #!/bin/bash
 #
-# Requires: dasel for xml manipulation (https://github.com/TomWright/dasel)
+# Requires: 
+# - dotnet 8.0.0 or later
+# - dasel for xml manipulation (https://github.com/TomWright/dasel)
 
 DEFAULT_PROJECT_NAME="Demo"
 DEFAULT_TARGET_DIR="../out"
