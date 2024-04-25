@@ -1,4 +1,6 @@
-# Requirements
+# Scripting notes
+
+## Requirements
 
 - bash
 - dotnet 8.0 or later
