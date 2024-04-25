@@ -1,14 +1,23 @@
-# Templating dotnet projects
+# Templating dotnet projects and solutions
+
+Why?
+
+I want a simple way of setting up new dotnet solutions using [CPM - Central Package Management](https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management).
+
+Using CPM solves many pain points I have with dotnet development:
+
+- projects using different versions of the same package
+- simplify the process of updating packages
+- simplify project configs (`*.csproj` / `*fsproj` files)
+- harmonize `src` and `test` projects
 
 Idea: 
 
-- I often need to setup dotnet solutions, but don't want to dive into the official 'templating' way of doing this.
-- I'll probably start with simple bash scripts.
-- If simple scripts work I might consider writing a simple TUI.
+- I'll probably start with a simple bash script.
 
 ## Projects
 
-### WebAPI, Library and Tests
+### Library and Tests
 
 - `.editorconfig`
 - `.gitignore`
@@ -18,16 +27,6 @@ Idea:
 - `global.json`
 - `README.md`
 - `src`
-  - simple WebAPI project
   - simple library project
 - `tests`
-  - xunit test project for WebAPI project
   - xunit test project for library project
-
-## Status Quo
-
-This is a chicken and egg problem.
-
-### Questions
-
-Is there a way of setting up a new dotnet solution from the command line using 'dotnet new ...' which respects/includes 'Directory.{Build,Packages}.props'? #dotnet

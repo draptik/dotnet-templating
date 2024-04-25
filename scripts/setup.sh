@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# Requires: dasel for xml manipulation (https://github.com/TomWright/dasel)
 
 DEFAULT_PROJECT_NAME="Demo"
 DEFAULT_TARGET_DIR="../out"
@@ -9,13 +11,13 @@ echo "==> RESOURCE_DIR: ${RESOURCE_DIR}"
 # if there are no command line argument, use default values
 # otherwise use the command line arguments
 if [ $# -eq 2 ]; then
-    echo "==> Using command line arguments:"
-    PROJECT_NAME=$1
-    TARGET_DIR=$2
+	echo "==> Using command line arguments:"
+	PROJECT_NAME=$1
+	TARGET_DIR=$2
 else
-    echo "==> No arguments provided. You can provide 2 arguments (first: project-name, second: target-folder). Using default values:"
-    PROJECT_NAME=$DEFAULT_PROJECT_NAME
-    TARGET_DIR=$DEFAULT_TARGET_DIR
+	echo "==> No arguments provided. You can provide 2 arguments (first: project-name, second: target-folder). Using default values:"
+	PROJECT_NAME=$DEFAULT_PROJECT_NAME
+	TARGET_DIR=$DEFAULT_TARGET_DIR
 fi
 
 echo "==>   PROJECT_NAME: ${PROJECT_NAME}"
@@ -30,35 +32,37 @@ rm -rf "${TARGET_DIR_ABSOLUTE_PATH:?}"/* "${TARGET_DIR_ABSOLUTE_PATH:?}"/.*
 SRC_DIR="${TARGET_DIR_ABSOLUTE_PATH}/src"
 TEST_DIR="${TARGET_DIR_ABSOLUTE_PATH}/tests"
 
-WEBAPI_NAME="${PROJECT_NAME}.MyWebApi"
+# WEBAPI_NAME="${PROJECT_NAME}.MyWebApi"
 LIBRARY_NAME="${PROJECT_NAME}.MyLib"
 
 # The first argument is the name of the project.
 # The second argument is the name of the xml element to delete.
 function delete_xml_element {
-    echo "==> **** Deleting xml element: '${2}' from project: '${1}' ..."
-    # NOTE: 
-    # 'dasel' is a command line tool for querying and updating XML documents. 
-    # It is simliar to 'jq' for JSON.
-    # Can be replaced by something else, this is just a quick and dirty solution.
-    dasel \
-        delete \
-        --file "${1}/${1}.csproj" \
-        --read xml \
-        --write xml \
-        "${2}" # <- remove element
-    echo "==> **** Deleted xml element: '${2}' from project: '${1}'"
+	INTERNAL_PROJECT_NAME=$1
+	INTERNAL_XML_ELEMENT=$2
+	echo "==> **** Deleting xml element: '${INTERNAL_XML_ELEMENT}' from project: '${INTERNAL_PROJECT_NAME}' ..."
+	# NOTE:
+	# 'dasel' is a command line tool for querying and updating XML documents.
+	# It is simliar to 'jq' for JSON.
+	# See: https://github.com/TomWright/dasel
+	# Can be replaced by something else, this is just a quick and dirty solution.
+	dasel \
+		delete \
+		--file "${INTERNAL_PROJECT_NAME}/${INTERNAL_PROJECT_NAME}.csproj" \
+		--read xml \
+		--write xml \
+		"${INTERNAL_XML_ELEMENT}" # <- remove element
+	echo "==> **** Deleted xml element: '${INTERNAL_XML_ELEMENT}' from project: '${INTERNAL_PROJECT_NAME}'"
 }
 
 # General files ---------------------------------------------------------------
 echo "==> Creating general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
 
 cp "${RESOURCE_DIR}/.gitattributes.template" "${TARGET_DIR_ABSOLUTE_PATH}/.gitattributes"
-mkdir "${TARGET_DIR_ABSOLUTE_PATH}/.config"
-cp "${RESOURCE_DIR}/.config/dotnet-tools.json" "${TARGET_DIR_ABSOLUTE_PATH}/.config/dotnet-tools.json"
 cp "${RESOURCE_DIR}/Directory.Build.props.template" "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Build.props"
 cp "${RESOURCE_DIR}/Directory.Packages.props.template" "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Packages.props"
-# TODO add .editorconfig
+mkdir "${TARGET_DIR_ABSOLUTE_PATH}/.config"
+cp "${RESOURCE_DIR}/.config/dotnet-tools.json" "${TARGET_DIR_ABSOLUTE_PATH}/.config/dotnet-tools.json"
 echo "==> Created general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
 
 # Create global.json
@@ -71,7 +75,12 @@ echo "==> Creating gitignore in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
 dotnet new gitignore --output "${TARGET_DIR_ABSOLUTE_PATH}"
 echo "==> Created gitignore in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
 
-# Create solution 
+# Create editorconfig
+echo "==> Creating editorconfig in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
+dotnet new editorconfig --output "${TARGET_DIR_ABSOLUTE_PATH}"
+echo "==> Created editorconfig in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
+
+# Create solution
 echo "==> Creating solution: '${PROJECT_NAME}' in folder '${TARGET_DIR_ABSOLUTE_PATH}'..."
 dotnet new sln -n "${PROJECT_NAME}" --output "${TARGET_DIR_ABSOLUTE_PATH}"
 echo "==> Created solution: '${PROJECT_NAME}' in folder '${TARGET_DIR_ABSOLUTE_PATH}'"
@@ -92,19 +101,6 @@ echo "==> Creating a class library: ${LIBRARY_NAME} ..."
 dotnet new classlib --no-restore --name "${LIBRARY_NAME}"
 echo "==> Created a class library: ${LIBRARY_NAME}"
 
-# Create WebApi project
-echo "==> Creating a webapi project: ${WEBAPI_NAME} ..."
-dotnet new webapi --no-restore --use-program-main --use-controllers --name "${WEBAPI_NAME}"
-echo "==> Created a webapi project: ${WEBAPI_NAME}"
-
-# The default webapi template doesn't know anything about 
-# the Central Package Management feature ('Directory.*.props').
-# We manually have to "cleanup".
-delete_xml_element "${WEBAPI_NAME}" "Project.PropertyGroup"
-
-# WebApi depends on Lib
-dotnet add "${WEBAPI_NAME}" reference "${LIBRARY_NAME}"
-
 # Tests folder ----------------------------------------------------------------
 mkdir "${TEST_DIR}"
 cd "${TEST_DIR}" || exit
@@ -117,10 +113,6 @@ echo "==> Added Directory.Build.props to tests folder"
 # Create Lib.Tests project
 LIBRARY_TEST_NAME="${LIBRARY_NAME}.Tests"
 dotnet new xunit --no-restore --name "${LIBRARY_TEST_NAME}"
-
-dotnet add "${LIBRARY_TEST_NAME}" package \
-    FluentAssertions 
-
 
 # Lib.Tests depends on Lib
 dotnet add "${LIBRARY_TEST_NAME}" reference "${SRC_DIR}/${LIBRARY_NAME}"
@@ -137,7 +129,6 @@ echo "SLN - Current folder: $(pwd)"
 
 # Add all projects to solution
 dotnet sln add "${SRC_DIR}/${LIBRARY_NAME}"
-dotnet sln add "${SRC_DIR}/${WEBAPI_NAME}"
 dotnet sln add "${TEST_DIR}/${LIBRARY_TEST_NAME}"
 
 # Restore dotnet tools
@@ -145,26 +136,12 @@ echo "==> Restoring dotnet tools ..."
 dotnet tool restore
 echo "==> Restored dotnet tools"
 
-# Apply ToCPM
-echo "==> Running tocpm ... (press Ctrl+C to continue)"
-cat "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Packages.props"
-dotnet tool run tocpm execute --force .
-cat "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Packages.props"
-echo "==> Ran tocpm"
-
 # Restore nuget packages
 echo "==> Restoring nuget packages ..."
 dotnet restore
 echo "==> Restored nuget packages"
 
-# Upgrade nuget packages
-echo "==> Upgrading nuget packages ..."
-dotnet outdated --upgrade
-echo "==> Upgraded nuget packages"
-echo "==>"
-echo "==> Done"
-
-# Run test
-# echo "==> Running tests ..."
-# dotnet test
-# echo "==> Ran tests"
+# Run tests (this builds the projects as well)
+echo "==> Running tests (builds the solution w/ tests) ..."
+dotnet test
+echo "==> Ran tests. Done."
