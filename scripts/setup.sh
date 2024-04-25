@@ -63,8 +63,6 @@ echo "==> Creating general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH} .
 cp "${RESOURCE_DIR}/.gitattributes.template" "${TARGET_DIR_ABSOLUTE_PATH}/.gitattributes"
 cp "${RESOURCE_DIR}/Directory.Build.props.template" "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Build.props"
 cp "${RESOURCE_DIR}/Directory.Packages.props.template" "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Packages.props"
-mkdir "${TARGET_DIR_ABSOLUTE_PATH}/.config"
-cp "${RESOURCE_DIR}/.config/dotnet-tools.json" "${TARGET_DIR_ABSOLUTE_PATH}/.config/dotnet-tools.json"
 echo "==> Created general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
 
 # Create global.json
@@ -132,11 +130,6 @@ echo "SLN - Current folder: $(pwd)"
 # Add all projects to solution
 dotnet sln add "${SRC_DIR}/${LIBRARY_NAME}"
 dotnet sln add "${TEST_DIR}/${LIBRARY_TEST_NAME}"
-
-# Restore dotnet tools
-echo "==> Restoring dotnet tools ..."
-dotnet tool restore
-echo "==> Restored dotnet tools"
 
 # Restore nuget packages
 echo "==> Restoring nuget packages ..."
