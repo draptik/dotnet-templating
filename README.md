@@ -1,8 +1,8 @@
-# Templating dotnet projects and solutions
+# Templating a dotnet solution
 
 Why?
 
-I want a simple way of setting up new dotnet solutions using [CPM - Central Package Management](https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management).
+I want a simple way of setting up new dotnet solution using [CPM - Central Package Management](https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management).
 
 Using CPM solves many pain points I have with dotnet development:
 
@@ -11,13 +11,13 @@ Using CPM solves many pain points I have with dotnet development:
 - simplify project configs (`*.csproj` / `*fsproj` files)
 - harmonize `src` and `test` projects
 
+I want to fire up a solution from the command line before I start the IDE. This way I have "my setup".
+
 Idea: 
 
 - I'll probably start with a simple bash script.
 
-## Projects
-
-### Library and Tests
+## My template - what I care about
 
 - `.editorconfig`
 - `.gitignore`
@@ -27,6 +27,33 @@ Idea:
 - `global.json`
 - `README.md`
 - `src`
+  - dedicated `Directory.Build.props`
   - simple library project
 - `tests`
-  - xunit test project for library project
+  - dedicated `Directory.Build.props` (for test projects)
+  - xunit test project referencing the library project from `src`
+
+## My template - with this setup
+
+```txt
+tree -L 3 -a          
+.
+├── Demo.sln
+├── Directory.Build.props
+├── Directory.Packages.props
+├── .editorconfig
+├── .gitattributes
+├── .gitignore
+├── global.json
+├── src
+│   ├── Demo.MyLib
+│   │   ├── Class1.cs
+│   │   ├── Demo.MyLib.csproj
+│   └── Directory.Build.props
+└── tests
+    ├── Demo.MyLib.Tests
+    │   ├── Demo.MyLib.Tests.csproj
+    │   ├── GlobalUsings.cs
+    │   └── UnitTest1.cs
+    └── Directory.Build.props
+```
