@@ -7,7 +7,9 @@
 DEFAULT_PROJECT_NAME="Demo"
 DEFAULT_TARGET_DIR="../out"
 
-RESOURCE_DIR=$(readlink -f "./resources")
+# https://stackoverflow.com/a/246128
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+RESOURCE_DIR="${SCRIPT_DIR}/resources"
 echo "==> RESOURCE_DIR: ${RESOURCE_DIR}"
 
 # if there are no command line argument, use default values
@@ -34,7 +36,6 @@ rm -rf "${TARGET_DIR_ABSOLUTE_PATH:?}"/* "${TARGET_DIR_ABSOLUTE_PATH:?}"/.*
 SRC_DIR="${TARGET_DIR_ABSOLUTE_PATH}/src"
 TEST_DIR="${TARGET_DIR_ABSOLUTE_PATH}/tests"
 
-# WEBAPI_NAME="${PROJECT_NAME}.MyWebApi"
 LIBRARY_NAME="${PROJECT_NAME}.MyLib"
 
 # The first argument is the name of the project.
@@ -59,6 +60,12 @@ function delete_xml_element {
 
 # General files ---------------------------------------------------------------
 echo "==> Creating general files in target folder: ${TARGET_DIR_ABSOLUTE_PATH} ..."
+
+# if the target folder does not exist, create it
+if [ ! -d "${TARGET_DIR_ABSOLUTE_PATH}" ]; then
+	echo "==> Creating target folder: ${TARGET_DIR_ABSOLUTE_PATH}"
+	mkdir "${TARGET_DIR_ABSOLUTE_PATH}"
+fi
 
 cp "${RESOURCE_DIR}/.gitattributes.template" "${TARGET_DIR_ABSOLUTE_PATH}/.gitattributes"
 cp "${RESOURCE_DIR}/Directory.Build.props.template" "${TARGET_DIR_ABSOLUTE_PATH}/Directory.Build.props"
