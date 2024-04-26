@@ -127,7 +127,7 @@ dotnet add "${LIBRARY_TEST_NAME}" reference "${SRC_DIR}/${LIBRARY_NAME}"
 # Remove the PropertyGroup element from the test project file:
 sed -i '/<PropertyGroup>/,/<\/PropertyGroup>/d' "${LIBRARY_TEST_NAME}/${LIBRARY_TEST_NAME}.csproj"
 
-# Remove the PropertyGroup element from the test project file:
+# Remove the first ItenGroup element from the test project file:
 delete_xml_element "${LIBRARY_TEST_NAME}" "Project.ItemGroup.[0]"
 
 # Back in main folder ---------------------------------------------------------
