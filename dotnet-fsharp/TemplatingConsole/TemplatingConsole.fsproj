@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TemplatingLib\TemplatingLib.fsproj" />
+        <ProjectReference Include="..\TemplatingLib\TemplatingLib.fsproj"/>
     </ItemGroup>
 
 </Project>
