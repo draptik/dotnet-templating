@@ -7,6 +7,21 @@
 
     <ItemGroup>
         <Compile Include="Library.fs"/>
+        <Content Include="resources\src\Directory.Build.props.template">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="resources\tests\Directory.Build.props.template">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="resources\Directory.Packages.props.template">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="resources\Directory.Build.props.template">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="resources\.gitattributes.template">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>

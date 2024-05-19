@@ -1,10 +1,16 @@
 ﻿namespace TemplatingLib
 
+open System
 open System.Diagnostics
 open System.IO
 open FsToolkit.ErrorHandling
 
 module Io =
+
+    type ConfigType =
+        | GitIgnore
+        | EditorConfig
+        | GlobalJson
 
     type ApplicationError =
         | InvalidProjectName of string
@@ -12,10 +18,15 @@ module Io =
         | UnknownLanguage of string
         | CantCreateOutputDirectory of string
         | CantCreateDotnetProject of string
+        | CantCreateConfigFile of string * ConfigType
+        | CantCopyResource of src: string * target: string * error: string
+        | CantCreateSolution of string
 
     type ValidatedPath = ValidatedPath of string
 
-    type ProjectType = | ClassLib | XUnit
+    type ProjectType =
+        | ClassLib
+        | XUnit
 
     let tryConvertToProjectType (s: string) =
         match s with
@@ -43,46 +54,55 @@ module Io =
         | CSharp -> "c#"
         | FSharp -> "f#"
 
-    type ValidProjectName = private ValidProjectName of string
+    type ValidSolutionName = private ValidSolutionName of string
 
-    module ValidProjectName =
+    module ValidSolutionName =
         let create (name: string) =
             if name.Length > 0 then
-                ValidProjectName name |> Ok
+                ValidSolutionName name |> Ok
             else
                 Error(InvalidProjectName "Project name must not be empty")
 
-        let value (ValidProjectName name) = name
+        let value (ValidSolutionName name) = name
 
+        let appendTo (ValidSolutionName name) (s: string) = $"{name}.{s}" |> ValidSolutionName
 
-    // type ProjectCreationInputs = ValidProjectName * ProjectType * Language * ValidatedPath
     type ProjectCreationInputs =
-        { ProjectName: ValidProjectName
+        { ProjectName: ValidSolutionName
           ProjectType: ProjectType
           Language: Language
           Path: ValidatedPath }
 
     let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
         let projectType = convertProjectTypeToString inputs.ProjectType
-        let projectName = ValidProjectName.value inputs.ProjectName
+        let projectName = ValidSolutionName.value inputs.ProjectName
         let (ValidatedPath path) = inputs.Path
         let language = convertLanguageToString inputs.Language
         (projectName, projectType, language, path)
 
     let tryToCreateOutputDirectory (unvalidatedPath: string) : Result<ValidatedPath, ApplicationError> =
         try
-            let path = Path.GetFullPath(unvalidatedPath)
+            // dotnet can't handle linux '~', so we need to replace it with the user's home directory
+            let sanitizedPath =
+                unvalidatedPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
+
+            let path = Path.GetFullPath(sanitizedPath)
             let output = Directory.CreateDirectory(path)
             output.FullName |> ValidatedPath |> Ok
         with e ->
             Error(CantCreateOutputDirectory e.Message)
 
-    let tryToCreateDotnetProject (projectCreationInputs: ProjectCreationInputs) : Result<unit, ApplicationError> =
+    let tryToCreateDotnetProjectWithoutRestore
+        (projectCreationInputs: ProjectCreationInputs)
+        : Result<unit, ApplicationError> =
         try
             let name, projectType, lang, path =
                 unwrapProjectCreationInputs projectCreationInputs
 
-            Process.Start("dotnet", $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang}")
+            Process.Start(
+                "dotnet",
+                $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore"
+            )
             |> ignore
             |> Ok
         with e ->
@@ -97,7 +117,7 @@ module Io =
 
         let tryValidatingInputs =
             validation {
-                let! projectName = ValidProjectName.create rawName
+                let! projectName = ValidSolutionName.create rawName
                 and! projectType = tryConvertToProjectType rawProjectType
                 and! language = tryConvertToLanguage rawLanguage
                 and! path = tryToCreateOutputDirectory rawPath
@@ -111,4 +131,45 @@ module Io =
 
         match tryValidatingInputs with
         | Error e -> Error e
-        | Ok inputs -> inputs |> tryToCreateDotnetProject |> Result.mapError (fun e -> [ e ])
+        | Ok inputs ->
+            inputs
+            |> tryToCreateDotnetProjectWithoutRestore
+            |> Result.mapError (fun e -> [ e ])
+
+    let configTypeToString =
+        function
+        | GitIgnore -> "gitignore"
+        | EditorConfig -> "editorconfig"
+        | GlobalJson -> "globaljson"
+
+    let tryCreateConfigFile (configType: ConfigType) (path: string) =
+        try
+            let latestLts = "8.0.0"
+            let rollForwardPolicy = "latestMajor"
+            let config = configTypeToString configType
+
+            match configType with
+            | GlobalJson ->
+                Process.Start(
+                    "dotnet",
+                    $"new %s{config} --sdk-version %s{latestLts} --roll-forward %s{rollForwardPolicy} --output %s{path}"
+                )
+                |> ignore
+                |> Ok
+            | _ -> Process.Start("dotnet", $"new %s{config} --output %s{path}") |> ignore |> Ok
+        with e ->
+            Error(CantCreateConfigFile(e.Message, configType))
+
+    let tryCopy (source: string) (target: string) =
+        try
+            File.Copy(source, target, overwrite = true) |> Ok
+        with e ->
+            Error(CantCopyResource(source, target, e.Message))
+
+    let tryCreateSolution (solutionName: string) (path: string) =
+        try
+            Process.Start("dotnet", $"new sln --name %s{solutionName} --output %s{path}")
+            |> ignore
+            |> Ok
+        with e ->
+            Error(CantCreateSolution e.Message)
