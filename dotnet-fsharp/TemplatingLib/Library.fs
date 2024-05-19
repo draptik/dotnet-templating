@@ -15,16 +15,18 @@ module Io =
 
     type ValidatedPath = ValidatedPath of string
 
-    type ProjectType = | ClassLib
+    type ProjectType = | ClassLib | XUnit
 
     let tryConvertToProjectType (s: string) =
         match s with
         | "classlib" -> ClassLib |> Ok
+        | "xunit" -> XUnit |> Ok
         | e -> Error(UnknownProjectType e)
 
     let convertProjectTypeToString =
         function
         | ClassLib -> "classlib"
+        | XUnit -> "xunit"
 
     type Language =
         | CSharp

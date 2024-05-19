@@ -21,13 +21,17 @@ let hasErrors (errorsExpected: ApplicationError list) (results: Result<unit, App
 
 let hasError (error: ApplicationError) (results: Result<unit, ApplicationError list>) = hasErrors [ error ] results
 
-let validProjectType = "classlib"
+let validProjectTypeClassLib = "classlib"
+let validProjectTypeXUnit = "xunit"
 let validProjectName = "Foo"
 let validPath = "~/tmp/foo"
-let validLanguage = "c#"
+let validLanguageCSharp = "c#"
+let validLanguageFSharp = "c#"
 
-[<Fact>]
-let ``create project - happy case w/ linux`` () =
+[<Theory>]
+[<InlineData("classlib", "c#")>]
+[<InlineData("xunit", "f#")>]
+let ``create project - happy case w/ linux`` validProjectType validLanguage =
     let actual =
         createDotnetProject validProjectType validProjectName validPath validLanguage
 
@@ -38,7 +42,7 @@ let ``create project - invalid project type`` () =
     let invalidProjectType = "invalidProjectType"
 
     let actual =
-        createDotnetProject invalidProjectType validProjectName validPath validLanguage
+        createDotnetProject invalidProjectType validProjectName validPath validLanguageCSharp
 
     let expected = (UnknownProjectType invalidProjectType)
     actual |> hasError expected
@@ -48,7 +52,7 @@ let ``create project - invalid project name`` () =
     let invalidProjectName = ""
 
     let actual =
-        createDotnetProject validProjectType invalidProjectName validPath validLanguage
+        createDotnetProject validProjectTypeClassLib invalidProjectName validPath validLanguageCSharp
 
     let expected = (InvalidProjectName "Project name must not be empty")
     actual |> hasError expected
@@ -58,7 +62,7 @@ let ``create project - invalid path / empty`` () =
     let invalidPath = ""
 
     let actual =
-        createDotnetProject validProjectType validProjectName invalidPath validLanguage
+        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp
 
     let expected =
         (CantCreateOutputDirectory "The value cannot be an empty string. (Parameter 'path')")
@@ -70,7 +74,7 @@ let ``create project - invalid path / access denied - linux`` () =
     let invalidPath = "/doesnotexist"
 
     let actual =
-        createDotnetProject validProjectType validProjectName invalidPath validLanguage
+        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp
 
     let expected =
         (CantCreateOutputDirectory $"Access to the path '%s{invalidPath}' is denied.")
@@ -82,7 +86,7 @@ let ``create project - invalid language`` () =
     let invalidLanguage = "vb.net"
 
     let actual =
-        createDotnetProject validProjectType validProjectName validPath invalidLanguage
+        createDotnetProject validProjectTypeClassLib validProjectName validPath invalidLanguage
 
     let expected = (UnknownLanguage invalidLanguage)
     actual |> hasError expected
