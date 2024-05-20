@@ -21,6 +21,7 @@ module Io =
         | CantCreateConfigFile of string * ConfigType
         | CantCopyResource of src: string * target: string * error: string
         | CantCreateSolution of string
+        | CantCreateDependency of string
 
     type ValidatedPath = ValidatedPath of string
 
@@ -94,7 +95,7 @@ module Io =
 
     let tryToCreateDotnetProjectWithoutRestore
         (projectCreationInputs: ProjectCreationInputs)
-        : Result<unit, ApplicationError> =
+        : Result<ValidatedPath, ApplicationError> =
         try
             let name, projectType, lang, path =
                 unwrapProjectCreationInputs projectCreationInputs
@@ -104,7 +105,8 @@ module Io =
                 $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore"
             )
             |> ignore
-            |> Ok
+
+            Ok($"{path}/{name}" |> ValidatedPath)
         with e ->
             Error(CantCreateDotnetProject e.Message)
 
@@ -113,7 +115,7 @@ module Io =
         (rawName: string)
         (rawPath: string)
         (rawLanguage: string)
-        : Result<unit, ApplicationError list> =
+        : Result<ValidatedPath, ApplicationError list> =
 
         let tryValidatingInputs =
             validation {
@@ -173,3 +175,11 @@ module Io =
             |> Ok
         with e ->
             Error(CantCreateSolution e.Message)
+
+    let tryAddProjectDependency (addTo: ValidatedPath) (validDependentPath: ValidatedPath) =
+        try
+            let (ValidatedPath project) = addTo
+            let (ValidatedPath dependsOn) = validDependentPath
+            Process.Start("dotnet", $"add %s{project} reference %s{dependsOn}") |> ignore |> Ok
+        with e ->
+            Error(CantCreateDependency e.Message)

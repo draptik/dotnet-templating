@@ -110,6 +110,10 @@ let main argv =
                       ProjectCreationInputs.Language = Language.CSharp
                       ProjectCreationInputs.Path = testsDir }
 
+            let! _ = tryAddProjectDependency testProject libProject
+            
+            // TODO now we need sed and xml parsing to update the project files
+
             return ()
         }
 

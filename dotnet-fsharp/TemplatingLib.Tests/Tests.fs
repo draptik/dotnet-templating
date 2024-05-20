@@ -14,12 +14,13 @@ let isError result =
     | Ok _ -> true =! false
     | Error _ -> true =! true
 
-let hasErrors (errorsExpected: ApplicationError list) (results: Result<unit, ApplicationError list>) =
+let hasErrors (errorsExpected: ApplicationError list) (results: Result<ValidatedPath, ApplicationError list>) =
     match results with
     | Ok _ -> true =! false
     | Error errors -> List.forall (fun e -> List.contains e errorsExpected) errors =! true
 
-let hasError (error: ApplicationError) (results: Result<unit, ApplicationError list>) = hasErrors [ error ] results
+let hasError (error: ApplicationError) (results: Result<ValidatedPath, ApplicationError list>) =
+    hasErrors [ error ] results
 
 let validProjectTypeClassLib = "classlib"
 let validProjectTypeXUnit = "xunit"
