@@ -5,33 +5,38 @@ open System.Diagnostics
 open System.IO
 open FsToolkit.ErrorHandling
 open Errors
+open TemplatingLib.Errors
 open Types
 
 module Io =
 
-    let processStart (fileName: string) (arguments: string) =
-        let startInfo = ProcessStartInfo(fileName, arguments)
+    let processStart (executable: string) (arguments: string) : Result<string, ApplicationError> =
+        let startInfo = ProcessStartInfo(executable, arguments)
         startInfo.UseShellExecute <- false
         startInfo.RedirectStandardOutput <- true
         startInfo.RedirectStandardError <- true
         startInfo.CreateNoWindow <- true
         startInfo.RedirectStandardOutput <- true
         startInfo.RedirectStandardError <- true
+
         let proc = new Process()
         proc.StartInfo <- startInfo
-        proc.Start() |> ignore
 
-        let stderr = proc.StandardError.ReadToEnd()
+        try
+            proc.Start() |> ignore // NOTE This can throw an exception if the executable is not found
 
-        if stderr.Length > 0 then
-            printfn $"stderr: %s{stderr}"
-        else
-            printfn "no errors"
+            let stdout = proc.StandardOutput.ReadToEnd()
+            let stderr = proc.StandardError.ReadToEnd()
 
-        let stdout = proc.StandardOutput.ReadToEnd()
-        printfn $"stdout: %s{stdout}"
+            proc.WaitForExit()
 
-        proc.WaitForExit()
+            if stderr.Length > 0 then
+                Error (DotNetProcessError $"%s{stderr}")
+            else
+                Ok $"%s{stdout}"
+        with e ->
+            Error (ProcessStartError
+                $"Process.Start() failed. Given executable: %s{executable} - Given arguments: %s{arguments} - Error message:  %s{e.Message}")
 
     let startDotnetProcess (arguments: string) = processStart "dotnet" arguments
 
@@ -53,22 +58,22 @@ module Io =
     let tryToCreateDotnetProjectWithoutRestore
         (projectCreationInputs: ProjectCreationInputs)
         : Result<ValidatedPath, ApplicationError> =
-        try
-            let name, projectType, lang, path =
-                unwrapProjectCreationInputs projectCreationInputs
+        let name, projectType, lang, path, forceOverwrite =
+            unwrapProjectCreationInputs projectCreationInputs
 
-            printfn $"Creating project: %s{name}..."
-            startDotnetProcess $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore"
-            printfn $"Created project: %s{name}..."
-            Ok(Path.Combine(path, name) |> ValidatedPath)
-        with e ->
-            Error(CantCreateDotnetProject e.Message)
+        if forceOverwrite then
+            Directory.Delete(path, recursive = true)
+            
+        startDotnetProcess $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore"
+        |> Result.mapError id
+        |> Result.map (fun _ -> Path.Combine(path, name) |> ValidatedPath)
 
     let createDotnetProject
         (rawProjectType: string)
         (rawName: string)
         (rawPath: string)
         (rawLanguage: string)
+        (forceOverwrite: bool)
         : Result<ValidatedPath, ApplicationError list> =
 
         let tryValidatingInputs =
@@ -82,7 +87,8 @@ module Io =
                     { ProjectName = projectName
                       ProjectType = projectType
                       Language = language
-                      Path = path }
+                      Path = path
+                      ForceOverWrite = forceOverwrite }
             }
 
         match tryValidatingInputs with

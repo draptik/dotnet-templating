@@ -33,12 +33,14 @@ let validPath = "~/tmp/foo"
 let validLanguageCSharp = "c#"
 let validLanguageFSharp = "c#"
 
+let forceOverwrite = true
+
 [<Theory>]
 [<InlineData("classlib", "c#")>]
 [<InlineData("xunit", "f#")>]
 let ``create project - happy case w/ linux`` validProjectType validLanguage =
     let actual =
-        createDotnetProject validProjectType validProjectName validPath validLanguage
+        createDotnetProject validProjectType validProjectName validPath validLanguage forceOverwrite
 
     actual |> isOk
 
@@ -47,7 +49,7 @@ let ``create project - invalid project type`` () =
     let invalidProjectType = "invalidProjectType"
 
     let actual =
-        createDotnetProject invalidProjectType validProjectName validPath validLanguageCSharp
+        createDotnetProject invalidProjectType validProjectName validPath validLanguageCSharp forceOverwrite
 
     let expected = (UnknownProjectType invalidProjectType)
     actual |> hasError expected
@@ -57,7 +59,7 @@ let ``create project - invalid project name`` () =
     let invalidProjectName = ""
 
     let actual =
-        createDotnetProject validProjectTypeClassLib invalidProjectName validPath validLanguageCSharp
+        createDotnetProject validProjectTypeClassLib invalidProjectName validPath validLanguageCSharp forceOverwrite
 
     let expected = (InvalidName "Name must not be empty")
     actual |> hasError expected
@@ -67,7 +69,7 @@ let ``create project - invalid path / empty`` () =
     let invalidPath = ""
 
     let actual =
-        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp
+        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp forceOverwrite
 
     let expected =
         (CantCreateOutputDirectory "The value cannot be an empty string. (Parameter 'path')")
@@ -79,7 +81,7 @@ let ``create project - invalid path / access denied - linux`` () =
     let invalidPath = "/doesnotexist"
 
     let actual =
-        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp
+        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp forceOverwrite
 
     let expected =
         (CantCreateOutputDirectory $"Access to the path '%s{invalidPath}' is denied.")
@@ -91,7 +93,7 @@ let ``create project - invalid language`` () =
     let invalidLanguage = "vb.net"
 
     let actual =
-        createDotnetProject validProjectTypeClassLib validProjectName validPath invalidLanguage
+        createDotnetProject validProjectTypeClassLib validProjectName validPath invalidLanguage forceOverwrite
 
     let expected = (UnknownLanguage invalidLanguage)
     actual |> hasError expected
@@ -104,7 +106,7 @@ let ``create project - all inputs invalid`` () =
     let invalidLanguage = "vb.net"
 
     let actual =
-        createDotnetProject invalidProjectType invalidProjectName invalidPath invalidLanguage
+        createDotnetProject invalidProjectType invalidProjectName invalidPath invalidLanguage forceOverwrite
 
     let expected =
         [ (UnknownLanguage invalidLanguage)

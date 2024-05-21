@@ -56,7 +56,8 @@ type ProjectCreationInputs =
     { ProjectName: ValidName
       ProjectType: ProjectType
       Language: Language
-      Path: ValidatedPath }
+      Path: ValidatedPath
+      ForceOverWrite: bool }
 
 let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
     let projectType = convertProjectTypeToString inputs.ProjectType
@@ -67,4 +68,4 @@ let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
     printfn
         $"unwrapping project creation inputs:\n\tProjectName: %s{projectName},\n\tProjectType: %s{projectType},\n\tLanguage: %s{language},\n\tPath: %s{inputs.Path}..."
 
-    (projectName, projectType, language, inputs.Path)
+    (projectName, projectType, language, inputs.Path, inputs.ForceOverWrite)

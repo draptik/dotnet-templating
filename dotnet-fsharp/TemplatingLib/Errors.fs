@@ -12,3 +12,5 @@ type ApplicationError =
     | CantCreateDependency of string
     | CantRemovePropertyGroup of string
     | CantRemoveItemGroup of string
+    | DotNetProcessError of string
+    | ProcessStartError of string
