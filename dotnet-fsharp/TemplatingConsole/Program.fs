@@ -47,6 +47,8 @@ let main argv =
     let outputDirectory =
         results.GetResult(Output_Directory, defaultValue = "~/tmp/foo1")
 
+    let forceOverWrite = results.GetResult(Force, defaultValue = true)
+
     printfn $"Creating root folder: %s{outputDirectory}"
 
     let src = "src"
@@ -106,7 +108,8 @@ let main argv =
                     { ProjectCreationInputs.ProjectType = ProjectType.ClassLib
                       ProjectCreationInputs.ProjectName = lib
                       ProjectCreationInputs.Language = selectedLanguage
-                      ProjectCreationInputs.Path = libPath }
+                      ProjectCreationInputs.Path = libPath
+                      ProjectCreationInputs.ForceOverWrite = forceOverWrite }
 
             printfn "Patching lib project files 1/1..."
             let! _ = libProject |> tryReplacePropertyGroupFromFile selectedLanguage
@@ -121,7 +124,8 @@ let main argv =
                     { ProjectCreationInputs.ProjectType = ProjectType.XUnit
                       ProjectCreationInputs.ProjectName = test
                       ProjectCreationInputs.Language = selectedLanguage
-                      ProjectCreationInputs.Path = testPath }
+                      ProjectCreationInputs.Path = testPath
+                      ProjectCreationInputs.ForceOverWrite = forceOverWrite }
 
             printfn "Creating dependencies..."
             let! _ = tryAddProjectDependency testPath libPath

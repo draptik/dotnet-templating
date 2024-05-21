@@ -5,7 +5,6 @@ open System.Diagnostics
 open System.IO
 open FsToolkit.ErrorHandling
 open Errors
-open TemplatingLib.Errors
 open Types
 
 module Io =
@@ -31,12 +30,14 @@ module Io =
             proc.WaitForExit()
 
             if stderr.Length > 0 then
-                Error (DotNetProcessError $"%s{stderr}")
+                Error(DotNetProcessError $"%s{stderr}")
             else
                 Ok $"%s{stdout}"
         with e ->
-            Error (ProcessStartError
-                $"Process.Start() failed. Given executable: %s{executable} - Given arguments: %s{arguments} - Error message:  %s{e.Message}")
+            Error(
+                ProcessStartError
+                    $"Process.Start() failed. Given executable: %s{executable} - Given arguments: %s{arguments} - Error message:  %s{e.Message}"
+            )
 
     let startDotnetProcess (arguments: string) = processStart "dotnet" arguments
 
@@ -61,10 +62,13 @@ module Io =
         let name, projectType, lang, path, forceOverwrite =
             unwrapProjectCreationInputs projectCreationInputs
 
+        let mutable args =
+            $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore"
+
         if forceOverwrite then
-            Directory.Delete(path, recursive = true)
-            
-        startDotnetProcess $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore"
+            args <- args + " --force"
+
+        startDotnetProcess args
         |> Result.mapError id
         |> Result.map (fun _ -> Path.Combine(path, name) |> ValidatedPath)
 
@@ -104,20 +108,16 @@ module Io =
         | EditorConfig -> "editorconfig"
         | GlobalJson -> "globaljson"
 
-    let tryCreateConfigFile (configType: ConfigType) (path: string) =
-        try
-            let latestLts = "8.0.0"
-            let rollForwardPolicy = "latestMajor"
-            let config = configTypeToString configType
+    let tryCreateConfigFile (configType: ConfigType) (path: string) : Result<string, ApplicationError> =
+        let latestLts = "8.0.0"
+        let rollForwardPolicy = "latestMajor"
+        let config = configTypeToString configType
 
-            match configType with
-            | GlobalJson ->
-                startDotnetProcess
-                    $"new %s{config} --sdk-version %s{latestLts} --roll-forward %s{rollForwardPolicy} --output %s{path}"
-                |> Ok
-            | _ -> startDotnetProcess $"new %s{config} --output %s{path}" |> Ok
-        with e ->
-            Error(CantCreateConfigFile(e.Message, configTypeToString configType))
+        match configType with
+        | GlobalJson ->
+            startDotnetProcess
+                $"new %s{config} --sdk-version %s{latestLts} --roll-forward %s{rollForwardPolicy} --output %s{path}"
+        | _ -> startDotnetProcess $"new %s{config} --output %s{path}"
 
     let tryCopy (source: string) (target: string) =
         try
@@ -126,28 +126,17 @@ module Io =
             Error(CantCopyResource(source, target, e.Message))
 
     let tryCreateSolution (solutionName: string) (path: string) =
-        try
-            startDotnetProcess $"new sln --name %s{solutionName} --output %s{path}" |> Ok
-        with e ->
-            Error(CantCreateSolution e.Message)
+        startDotnetProcess $"new sln --name %s{solutionName} --output %s{path}" |> Ok
 
     let tryAddProjectToSolution (solutionPath: ValidatedPath) (projectPath: ValidatedPath) =
         printfn $"Adding project: %s{projectPath} to solution %s{solutionPath}..."
-
-        try
-            startDotnetProcess $"sln %s{solutionPath} add %s{projectPath}" |> Ok
-        with e ->
-            Error(CantCreateDependency e.Message)
+        startDotnetProcess $"sln %s{solutionPath} add %s{projectPath}" |> Ok
 
     let tryAddProjectDependency (addTo: ValidatedPath) (validDependentPath: ValidatedPath) =
         let project = addTo
         let dependsOn = validDependentPath
         printfn $"Creating dependency: %s{project} depends on %s{dependsOn} ..."
-
-        try
-            startDotnetProcess $"add %s{project} reference %s{dependsOn}" |> Ok
-        with e ->
-            Error(CantCreateDependency e.Message)
+        startDotnetProcess $"add %s{project} reference %s{dependsOn}" |> Ok
 
     let languageToConfigExtension =
         function
