@@ -55,7 +55,7 @@ let ``create project - invalid project name`` () =
     let actual =
         createDotnetProject validProjectTypeClassLib invalidProjectName validPath validLanguageCSharp
 
-    let expected = (InvalidProjectName "Project name must not be empty")
+    let expected = (InvalidName "Name must not be empty")
     actual |> hasError expected
 
 [<Fact>]
@@ -105,7 +105,58 @@ let ``create project - all inputs invalid`` () =
     let expected =
         [ (UnknownLanguage invalidLanguage)
           (CantCreateOutputDirectory $"Access to the path '%s{invalidPath}' is denied.")
-          (InvalidProjectName "Project name must not be empty")
+          (InvalidName "Name must not be empty")
           (UnknownProjectType invalidProjectType) ]
 
     actual |> hasErrors expected
+
+[<Fact>]
+let ``xml experiment 1 - single PropertyGroup present -> remove first PropertyGroup`` () =
+    let xml =
+        "<Project><PropertyGroup><TargetFramework>net5.0</TargetFramework></PropertyGroup></Project>"
+
+    let doc = System.Xml.Linq.XDocument.Parse xml
+    let prop = doc.Descendants("PropertyGroup") |> Seq.head
+    prop.Remove()
+    let actual = doc.ToString()
+    let expected = "<Project />"
+    test <@ actual = expected @>
+
+[<Fact>]
+let ``xml experiment 2 - multiple PropertyGroups present -> remove first PropertyGroup`` () =
+    let xml =
+        "<Project><PropertyGroup><TargetFramework>net5.0</TargetFramework></PropertyGroup><PropertyGroup>foo</PropertyGroup></Project>"
+
+    let doc = System.Xml.Linq.XDocument.Parse xml
+    let prop = doc.Descendants("PropertyGroup") |> Seq.head
+    prop.Remove()
+    let actual = doc.ToString()
+    let expected = "<Project>\n  <PropertyGroup>foo</PropertyGroup>\n</Project>"
+    test <@ actual = expected @>
+
+[<Fact>]
+let ``xml experiment 3 - multiple PropertyGroups present -> remove all PropertyGroups`` () =
+    let xml =
+        "<Project><PropertyGroup><TargetFramework>net5.0</TargetFramework></PropertyGroup><PropertyGroup>foo</PropertyGroup></Project>"
+
+    let doc = System.Xml.Linq.XDocument.Parse xml
+    doc.Descendants("PropertyGroup") |> Seq.toList |> List.iter (_.Remove())
+    let actual = doc.ToString()
+    let expected = "<Project />"
+    test <@ actual = expected @>
+
+[<Fact>]
+let ``xml experiment 4 - multiple ItemGroups present -> remove first ItemGroup and preserve PropertyGroup`` () =
+    let xml =
+        "<Project><PropertyGroup><TargetFramework>net5.0</TargetFramework></PropertyGroup><ItemGroup>foo</ItemGroup><ItemGroup>bar</ItemGroup></Project>"
+
+    let doc = System.Xml.Linq.XDocument.Parse xml
+    let itemGroup1 = doc.Descendants("ItemGroup") |> Seq.head
+    itemGroup1.Remove()
+
+    let actual = doc.ToString()
+
+    let expected =
+        "<Project>\n  <PropertyGroup>\n    <TargetFramework>net5.0</TargetFramework>\n  </PropertyGroup>\n  <ItemGroup>bar</ItemGroup>\n</Project>"
+
+    test <@ actual = expected @>

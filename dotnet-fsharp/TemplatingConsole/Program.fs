@@ -48,8 +48,6 @@ let main argv =
 
     printfn $"Creating root folder: %s{outputDirectory}"
 
-    let slash = Path.DirectorySeparatorChar
-
     let src = "src"
     let tests = "tests"
     let DirectoryBuildProps = "Directory.Build.props"
@@ -68,19 +66,19 @@ let main argv =
         Path.Combine(resourceDirectory, $"{gitAttributes}.template")
 
     let srcDirBuildPropsTemplate =
-        Path.Combine(resourceDirectory, $"src{slash}{DirectoryBuildProps}.template")
+        Path.Combine(resourceDirectory, src, $"{DirectoryBuildProps}.template")
 
     let testsDirBuildPropsTemplate =
-        Path.Combine(resourceDirectory, $"tests{slash}{DirectoryBuildProps}.template")
+        Path.Combine(resourceDirectory, tests, $"{DirectoryBuildProps}.template")
 
     let workflow =
         result {
-            let! validSolutionName = ValidSolutionName.create solutionName
+            let! validSolutionName = ValidName.create solutionName
 
             let! (ValidatedPath outputPath) = tryToCreateOutputDirectory outputDirectory
 
-            let! srcDir = tryToCreateOutputDirectory (Path.Combine(outputPath, src))
-            let! testsDir = tryToCreateOutputDirectory (Path.Combine(outputPath, tests))
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, src))
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, tests))
 
             let! _ = tryCreateConfigFile GitIgnore outputPath
             let! _ = tryCreateConfigFile EditorConfig outputPath
@@ -93,27 +91,48 @@ let main argv =
             let! _ = tryCopy srcDirBuildPropsTemplate (Path.Combine(outputPath, src, DirectoryBuildProps))
             let! _ = tryCopy testsDirBuildPropsTemplate (Path.Combine(outputPath, tests, DirectoryBuildProps))
 
-            let! sln = tryCreateSolution solutionName outputPath
+            printfn $"Creating solution: %s{solutionName}"
+            let! _ = tryCreateSolution solutionName outputPath
+
+            let lib = ValidName.appendTo validSolutionName defaultLibName
+            let libName = ValidName.value lib
+            let libPath = ValidatedPath(Path.Combine(outputPath, src, libName))
 
             let! libProject =
                 tryToCreateDotnetProjectWithoutRestore
                     { ProjectCreationInputs.ProjectType = ProjectType.ClassLib
-                      ProjectCreationInputs.ProjectName = ValidSolutionName.appendTo validSolutionName defaultLibName
+                      ProjectCreationInputs.ProjectName = lib
                       ProjectCreationInputs.Language = Language.CSharp
-                      ProjectCreationInputs.Path = srcDir }
+                      ProjectCreationInputs.Path = libPath }
+
+            printfn "Patching lib project files 1/1..."
+            let! _ = libProject |> tryReplacePropertyGroupFromFile
+
+            let test = ValidName.appendTo validSolutionName defaultLibTestName
+            let testName = ValidName.value test
+            let testPath = ValidatedPath(Path.Combine(outputPath, tests, testName))
+            printfn $"Creating test: %s{testName}"
 
             let! testProject =
                 tryToCreateDotnetProjectWithoutRestore
                     { ProjectCreationInputs.ProjectType = ProjectType.XUnit
-                      ProjectCreationInputs.ProjectName =
-                        ValidSolutionName.appendTo validSolutionName defaultLibTestName
+                      ProjectCreationInputs.ProjectName = test
                       ProjectCreationInputs.Language = Language.CSharp
-                      ProjectCreationInputs.Path = testsDir }
+                      ProjectCreationInputs.Path = testPath }
 
-            let! _ = tryAddProjectDependency testProject libProject
-            
-            // TODO now we need sed and xml parsing to update the project files
+            printfn "Creating dependencies..."
+            let! _ = tryAddProjectDependency testPath libPath
 
+            printfn "Patching test project files 1/2..."
+            let! _ = testProject |> tryReplacePropertyGroupFromFile
+            printfn "Patching test project files 2/2..."
+            let! _ = testProject |> tryReplaceItemGroupFromFile
+
+            printfn "Adding projects to solution file..."
+            let! _ = tryAddProjectToSolution (ValidatedPath outputPath) libPath
+            let! _ = tryAddProjectToSolution (ValidatedPath outputPath) testPath
+
+            printfn "Done"
             return ()
         }
 
