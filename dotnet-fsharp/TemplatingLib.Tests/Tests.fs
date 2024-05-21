@@ -1,5 +1,6 @@
 module Tests
 
+open System.Diagnostics
 open Xunit
 open Swensen.Unquote
 
@@ -163,3 +164,67 @@ let ``xml experiment 4 - multiple ItemGroups present -> remove first ItemGroup a
         "<Project>\n  <PropertyGroup>\n    <TargetFramework>net5.0</TargetFramework>\n  </PropertyGroup>\n  <ItemGroup>bar</ItemGroup>\n</Project>"
 
     test <@ actual = expected @>
+
+
+let processStart (executable: string) (arguments: string) =
+    let startInfo = ProcessStartInfo(executable, arguments)
+    startInfo.UseShellExecute <- false
+    startInfo.RedirectStandardOutput <- true
+    startInfo.RedirectStandardError <- true
+    startInfo.CreateNoWindow <- true
+    startInfo.RedirectStandardOutput <- true
+    startInfo.RedirectStandardError <- true
+
+    let proc = new Process()
+    proc.StartInfo <- startInfo
+
+    try
+        proc.Start() |> ignore // NOTE This can throw an exception if the executable is not found
+
+        let stdout = proc.StandardOutput.ReadToEnd()
+        let stderr = proc.StandardError.ReadToEnd()
+
+        proc.WaitForExit()
+
+        if stderr.Length > 0 then
+            Error $"%s{stderr}"
+        else
+            Ok $"%s{stdout}"
+    with e ->
+        Error
+            $"Process.Start() failed. Given executable: %s{executable} - Given arguments: %s{arguments} - Error message:  %s{e.Message}"
+
+[<Fact>]
+let ``process valid - dotnet --info`` () =
+    let actual = processStart "dotnet" "--info"
+
+    match actual with
+    | Ok s -> s.StartsWith ".NET SDK" =! true
+    | Error _ -> true =! false
+
+[<Fact>]
+let ``process invalid`` () =
+    let actual = processStart "doesnotexist" "foo"
+
+    match actual with
+    | Ok _ -> true =! false
+    | Error e ->
+        e.StartsWith "Process.Start() failed. Given executable: doesnotexist - Given arguments: foo"
+        =! true
+
+[<Fact>]
+let ``process valid - invalid arguments`` () =
+    let actual = processStart "dotnet" "invalid arguments"
+
+    match actual with
+    | Ok _ -> true =! false
+    | Error e -> e.Contains "Could not execute" =! true
+
+[<Fact>]
+let ``process valid & arguments syntactically valid, but invalid path - fails w/ permission denied`` () =
+    let actual =
+        processStart "dotnet" "new classlib --name Foo --output /doesnotexist --no-restore"
+
+    match actual with
+    | Ok _ -> true =! false
+    | Error e -> e.Contains "Permission denied" =! true
