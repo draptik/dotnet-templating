@@ -23,9 +23,10 @@ module Io =
         | CantCopyResource of src: string * target: string * error: string
         | CantCreateSolution of string
         | CantCreateDependency of string
-        | CantReplacePropertyGroup of string
+        | CantRemovePropertyGroup of string
+        | CantRemoveItemGroup of string
 
-    type ValidatedPath = ValidatedPath of string
+    type ValidatedPath = string
 
     type ProjectType =
         | ClassLib
@@ -105,17 +106,13 @@ module Io =
     let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
         let projectType = convertProjectTypeToString inputs.ProjectType
         let projectName = ValidName.value inputs.ProjectName
-
-        let path =
-            match inputs.Path with
-            | ValidatedPath p -> p
-
+        
         let language = convertLanguageToString inputs.Language
 
         printfn
-            $"unwrapping project creation inputs:\n\tProjectName: %s{projectName},\n\tProjectType: %s{projectType},\n\tLanguage: %s{language},\n\tPath: %s{path}..."
+            $"unwrapping project creation inputs:\n\tProjectName: %s{projectName},\n\tProjectType: %s{projectType},\n\tLanguage: %s{language},\n\tPath: %s{inputs.Path}..."
 
-        (projectName, projectType, language, path)
+        (projectName, projectType, language, inputs.Path)
 
     let tryToCreateOutputDirectory (unvalidatedPath: string) : Result<ValidatedPath, ApplicationError> =
         printfn $"Creating output directory: %s{unvalidatedPath}..."
@@ -207,18 +204,15 @@ module Io =
             Error(CantCreateSolution e.Message)
 
     let tryAddProjectToSolution (solutionPath: ValidatedPath) (projectPath: ValidatedPath) =
-        let (ValidatedPath solution) = solutionPath
-        let (ValidatedPath project) = projectPath
-        printfn $"Adding project: %s{project} to solution %s{solution}..."
-
+        printfn $"Adding project: %s{projectPath} to solution %s{solutionPath}..."
         try
-            startDotnetProcess $"sln %s{solution} add %s{project}" |> Ok
+            startDotnetProcess $"sln %s{solutionPath} add %s{projectPath}" |> Ok
         with e ->
             Error(CantCreateDependency e.Message)
 
     let tryAddProjectDependency (addTo: ValidatedPath) (validDependentPath: ValidatedPath) =
-        let (ValidatedPath project) = addTo
-        let (ValidatedPath dependsOn) = validDependentPath
+        let project = addTo
+        let dependsOn = validDependentPath
         printfn $"Creating dependency: %s{project} depends on %s{dependsOn} ..."
 
         try
@@ -226,22 +220,27 @@ module Io =
         with e ->
             Error(CantCreateDependency e.Message)
 
-    let tryReplacePropertyGroupFromFile (path: ValidatedPath) =
+    let languageToConfigExtension =
+        function
+        | CSharp -> "csproj"
+        | FSharp -> "fsproj"
+    
+    let tryReplacePropertyGroupFromFile (language: Language) (path: ValidatedPath) =
+        let ext = languageToConfigExtension language
+        let file = $"{path}.{ext}"
         try
-            let (ValidatedPath p) = path
-            let file = $"{p}.csproj"
             let xmlString = File.ReadAllText file
             let newXml = removeFirstPropertyGroupFromXml xmlString
             File.WriteAllText(file, newXml) |> Ok
         with e ->
-            Error(CantReplacePropertyGroup e.Message)
+            Error(CantRemovePropertyGroup e.Message)
 
-    let tryReplaceItemGroupFromFile (xmlFile: ValidatedPath) =
+    let tryReplaceItemGroupFromFile (language: Language) (path: ValidatedPath) =
+        let ext = languageToConfigExtension language
+        let file = $"{path}.{ext}"
         try
-            let (ValidatedPath xml) = xmlFile
-            let file = $"{xml}.csproj"
             let xmlString = File.ReadAllText file
             let newXml = removeFirstItemGroupFromXml xmlString
             File.WriteAllText(file, newXml) |> Ok
         with e ->
-            Error(CantReplacePropertyGroup e.Message)
+            Error(CantRemoveItemGroup e.Message)

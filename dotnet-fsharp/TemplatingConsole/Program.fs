@@ -75,7 +75,7 @@ let main argv =
         result {
             let! validSolutionName = ValidName.create solutionName
 
-            let! (ValidatedPath outputPath) = tryToCreateOutputDirectory outputDirectory
+            let! outputPath = tryToCreateOutputDirectory outputDirectory
 
             let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, src))
             let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, tests))
@@ -98,15 +98,16 @@ let main argv =
             let libName = ValidName.value lib
             let libPath = ValidatedPath(Path.Combine(outputPath, src, libName))
 
+            let selectedLanguage = Language.CSharp
             let! libProject =
                 tryToCreateDotnetProjectWithoutRestore
                     { ProjectCreationInputs.ProjectType = ProjectType.ClassLib
                       ProjectCreationInputs.ProjectName = lib
-                      ProjectCreationInputs.Language = Language.CSharp
+                      ProjectCreationInputs.Language = selectedLanguage
                       ProjectCreationInputs.Path = libPath }
 
             printfn "Patching lib project files 1/1..."
-            let! _ = libProject |> tryReplacePropertyGroupFromFile
+            let! _ = libProject |> tryReplacePropertyGroupFromFile selectedLanguage
 
             let test = ValidName.appendTo validSolutionName defaultLibTestName
             let testName = ValidName.value test
@@ -117,20 +118,20 @@ let main argv =
                 tryToCreateDotnetProjectWithoutRestore
                     { ProjectCreationInputs.ProjectType = ProjectType.XUnit
                       ProjectCreationInputs.ProjectName = test
-                      ProjectCreationInputs.Language = Language.CSharp
+                      ProjectCreationInputs.Language = selectedLanguage
                       ProjectCreationInputs.Path = testPath }
 
             printfn "Creating dependencies..."
             let! _ = tryAddProjectDependency testPath libPath
 
             printfn "Patching test project files 1/2..."
-            let! _ = testProject |> tryReplacePropertyGroupFromFile
+            let! _ = testProject |> tryReplacePropertyGroupFromFile selectedLanguage
             printfn "Patching test project files 2/2..."
-            let! _ = testProject |> tryReplaceItemGroupFromFile
+            let! _ = testProject |> tryReplaceItemGroupFromFile selectedLanguage
 
             printfn "Adding projects to solution file..."
-            let! _ = tryAddProjectToSolution (ValidatedPath outputPath) libPath
-            let! _ = tryAddProjectToSolution (ValidatedPath outputPath) testPath
+            let! _ = tryAddProjectToSolution outputPath libPath
+            let! _ = tryAddProjectToSolution outputPath testPath
 
             printfn "Done"
             return ()
