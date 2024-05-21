@@ -6,6 +6,7 @@ open Argu
 open FsToolkit.ErrorHandling
 
 open TemplatingLib.Io
+open TemplatingLib.Types
 
 type CliArguments =
     | [<AltCommandLine("-n"); Unique>] Solution_Name of name: string
@@ -99,6 +100,7 @@ let main argv =
             let libPath = ValidatedPath(Path.Combine(outputPath, src, libName))
 
             let selectedLanguage = Language.CSharp
+
             let! libProject =
                 tryToCreateDotnetProjectWithoutRestore
                     { ProjectCreationInputs.ProjectType = ProjectType.ClassLib

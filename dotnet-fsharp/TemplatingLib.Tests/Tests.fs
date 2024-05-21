@@ -1,8 +1,11 @@
 module Tests
 
-open TemplatingLib.Io
 open Xunit
 open Swensen.Unquote
+
+open TemplatingLib.Io
+open TemplatingLib.Errors
+open TemplatingLib.Types
 
 let isOk result =
     match result with

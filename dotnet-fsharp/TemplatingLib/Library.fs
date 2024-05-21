@@ -4,72 +4,10 @@ open System
 open System.Diagnostics
 open System.IO
 open FsToolkit.ErrorHandling
-open XmlLib
+open Errors
+open Types
 
 module Io =
-
-    type ConfigType =
-        | GitIgnore
-        | EditorConfig
-        | GlobalJson
-
-    type ApplicationError =
-        | InvalidName of string
-        | UnknownProjectType of string
-        | UnknownLanguage of string
-        | CantCreateOutputDirectory of string
-        | CantCreateDotnetProject of string
-        | CantCreateConfigFile of error: string * configType: string
-        | CantCopyResource of src: string * target: string * error: string
-        | CantCreateSolution of string
-        | CantCreateDependency of string
-        | CantRemovePropertyGroup of string
-        | CantRemoveItemGroup of string
-
-    type ValidatedPath = string
-
-    type ProjectType =
-        | ClassLib
-        | XUnit
-
-    let tryConvertToProjectType (s: string) =
-        match s with
-        | "classlib" -> ClassLib |> Ok
-        | "xunit" -> XUnit |> Ok
-        | e -> Error(UnknownProjectType e)
-
-    let convertProjectTypeToString =
-        function
-        | ClassLib -> "classlib"
-        | XUnit -> "xunit"
-
-    type Language =
-        | CSharp
-        | FSharp
-
-    let tryConvertToLanguage (s: string) =
-        match s with
-        | "c#" -> CSharp |> Ok
-        | "f#" -> FSharp |> Ok
-        | e -> Error(UnknownLanguage e)
-
-    let convertLanguageToString =
-        function
-        | CSharp -> "c#"
-        | FSharp -> "f#"
-
-    type ValidName = private ValidName of string
-
-    module ValidName =
-        let create (name: string) =
-            if name.Length > 0 then
-                ValidName name |> Ok
-            else
-                Error(InvalidName "Name must not be empty")
-
-        let value (ValidName name) = name
-
-        let appendTo (ValidName name) (s: string) = $"{name}.{s}" |> ValidName
 
     let processStart (fileName: string) (arguments: string) =
         let startInfo = ProcessStartInfo(fileName, arguments)
@@ -97,22 +35,6 @@ module Io =
 
     let startDotnetProcess (arguments: string) = processStart "dotnet" arguments
 
-    type ProjectCreationInputs =
-        { ProjectName: ValidName
-          ProjectType: ProjectType
-          Language: Language
-          Path: ValidatedPath }
-
-    let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
-        let projectType = convertProjectTypeToString inputs.ProjectType
-        let projectName = ValidName.value inputs.ProjectName
-        
-        let language = convertLanguageToString inputs.Language
-
-        printfn
-            $"unwrapping project creation inputs:\n\tProjectName: %s{projectName},\n\tProjectType: %s{projectType},\n\tLanguage: %s{language},\n\tPath: %s{inputs.Path}..."
-
-        (projectName, projectType, language, inputs.Path)
 
     let tryToCreateOutputDirectory (unvalidatedPath: string) : Result<ValidatedPath, ApplicationError> =
         printfn $"Creating output directory: %s{unvalidatedPath}..."
@@ -205,6 +127,7 @@ module Io =
 
     let tryAddProjectToSolution (solutionPath: ValidatedPath) (projectPath: ValidatedPath) =
         printfn $"Adding project: %s{projectPath} to solution %s{solutionPath}..."
+
         try
             startDotnetProcess $"sln %s{solutionPath} add %s{projectPath}" |> Ok
         with e ->
@@ -224,10 +147,21 @@ module Io =
         function
         | CSharp -> "csproj"
         | FSharp -> "fsproj"
-    
+
+    let removeFromXml (xml: string) (element: string) =
+        let doc = System.Xml.Linq.XDocument.Parse xml
+        let head = doc.Descendants(element) |> Seq.head
+        head.Remove()
+        doc.ToString()
+
+    let removeFirstPropertyGroupFromXml (xml: string) = removeFromXml xml "PropertyGroup"
+
+    let removeFirstItemGroupFromXml (xml: string) = removeFromXml xml "ItemGroup"
+
     let tryReplacePropertyGroupFromFile (language: Language) (path: ValidatedPath) =
         let ext = languageToConfigExtension language
         let file = $"{path}.{ext}"
+
         try
             let xmlString = File.ReadAllText file
             let newXml = removeFirstPropertyGroupFromXml xmlString
@@ -238,6 +172,7 @@ module Io =
     let tryReplaceItemGroupFromFile (language: Language) (path: ValidatedPath) =
         let ext = languageToConfigExtension language
         let file = $"{path}.{ext}"
+
         try
             let xmlString = File.ReadAllText file
             let newXml = removeFirstItemGroupFromXml xmlString

@@ -6,7 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="XmlLib.fs"/>
+        <Compile Include="Errors.fs" />
+        <Compile Include="Types.fs" />
         <Compile Include="Library.fs"/>
         <Content Include="resources\src\Directory.Build.props.template">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
