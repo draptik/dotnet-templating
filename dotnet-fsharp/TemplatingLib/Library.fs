@@ -19,7 +19,7 @@ module Io =
         | UnknownLanguage of string
         | CantCreateOutputDirectory of string
         | CantCreateDotnetProject of string
-        | CantCreateConfigFile of string * ConfigType
+        | CantCreateConfigFile of error: string * configType: string
         | CantCopyResource of src: string * target: string * error: string
         | CantCreateSolution of string
         | CantCreateDependency of string
@@ -189,7 +189,7 @@ module Io =
                 |> Ok
             | _ -> startDotnetProcess $"new %s{config} --output %s{path}" |> Ok
         with e ->
-            Error(CantCreateConfigFile(e.Message, configType))
+            Error(CantCreateConfigFile(e.Message, configTypeToString configType))
 
     let tryCopy (source: string) (target: string) =
         try
