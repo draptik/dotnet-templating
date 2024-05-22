@@ -37,42 +37,44 @@ let parser =
 let main argv =
     let results = parser.ParseCommandLine argv
 
-    let defaultResourceDirectory = "../TemplatingLib/resources"
-
     let resourceDirectory =
-        Path.GetFullPath(results.GetResult(Resource_Directory, defaultValue = defaultResourceDirectory))
+        Path.GetFullPath(
+            results.GetResult(Resource_Directory, defaultValue = TemplatingLib.Defaults.defaultResourceDirectory)
+        )
 
-    let solutionName = results.GetResult(Solution_Name, defaultValue = "Foo")
+    let solutionName =
+        results.GetResult(Solution_Name, defaultValue = TemplatingLib.Defaults.defaultSolutionName)
 
     let outputDirectory =
-        results.GetResult(Output_Directory, defaultValue = "~/tmp/foo1")
+        results.GetResult(Output_Directory, defaultValue = TemplatingLib.Defaults.defaultOutputDirectory)
 
-    let forceOverWrite = results.GetResult(Force, defaultValue = true)
+    let forceOverWrite =
+        results.GetResult(Force, defaultValue = TemplatingLib.Defaults.defaultForceOverwrite)
 
     printfn $"Creating root folder: %s{outputDirectory}"
 
-    let src = "src"
-    let tests = "tests"
-    let DirectoryBuildProps = "Directory.Build.props"
-    let DirectoryPackagesProps = "Directory.Packages.props"
-    let gitAttributes = ".gitattributes"
-    let defaultLibName = "MyLib"
-    let defaultLibTestName = "MyLib.Tests"
-
     let rootBuildPropsTemplate =
-        Path.Combine(resourceDirectory, $"{DirectoryBuildProps}.template")
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Defaults.DirectoryBuildProps}.template")
 
     let rootPackagesTemplate =
-        Path.Combine(resourceDirectory, $"{DirectoryPackagesProps}.template")
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Defaults.DirectoryPackagesProps}.template")
 
     let gitAttributesTemplate =
-        Path.Combine(resourceDirectory, $"{gitAttributes}.template")
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Defaults.gitAttributes}.template")
 
     let srcDirBuildPropsTemplate =
-        Path.Combine(resourceDirectory, src, $"{DirectoryBuildProps}.template")
+        Path.Combine(
+            resourceDirectory,
+            TemplatingLib.Defaults.src,
+            $"{TemplatingLib.Defaults.DirectoryBuildProps}.template"
+        )
 
     let testsDirBuildPropsTemplate =
-        Path.Combine(resourceDirectory, tests, $"{DirectoryBuildProps}.template")
+        Path.Combine(
+            resourceDirectory,
+            TemplatingLib.Defaults.tests,
+            $"{TemplatingLib.Defaults.DirectoryBuildProps}.template"
+        )
 
     let workflow =
         result {
@@ -80,26 +82,39 @@ let main argv =
 
             let! outputPath = tryToCreateOutputDirectory outputDirectory
 
-            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, src))
-            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, tests))
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, TemplatingLib.Defaults.src))
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, TemplatingLib.Defaults.tests))
 
             let! _ = tryCreateConfigFile GitIgnore outputPath
             let! _ = tryCreateConfigFile EditorConfig outputPath
             let! _ = tryCreateConfigFile GlobalJson outputPath
 
-            let! _ = tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, DirectoryBuildProps))
-            let! _ = tryCopy rootPackagesTemplate (Path.Combine(outputPath, DirectoryPackagesProps))
-            let! _ = tryCopy gitAttributesTemplate (Path.Combine(outputPath, gitAttributes))
+            let! _ =
+                tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, TemplatingLib.Defaults.DirectoryBuildProps))
 
-            let! _ = tryCopy srcDirBuildPropsTemplate (Path.Combine(outputPath, src, DirectoryBuildProps))
-            let! _ = tryCopy testsDirBuildPropsTemplate (Path.Combine(outputPath, tests, DirectoryBuildProps))
+            let! _ =
+                tryCopy rootPackagesTemplate (Path.Combine(outputPath, TemplatingLib.Defaults.DirectoryPackagesProps))
+
+            let! _ = tryCopy gitAttributesTemplate (Path.Combine(outputPath, TemplatingLib.Defaults.gitAttributes))
+
+            let! _ =
+                tryCopy
+                    srcDirBuildPropsTemplate
+                    (Path.Combine(outputPath, TemplatingLib.Defaults.src, TemplatingLib.Defaults.DirectoryBuildProps))
+
+            let! _ =
+                tryCopy
+                    testsDirBuildPropsTemplate
+                    (Path.Combine(outputPath, TemplatingLib.Defaults.tests, TemplatingLib.Defaults.DirectoryBuildProps))
 
             printfn $"Creating solution: %s{solutionName}"
             let! _ = tryCreateSolution solutionName outputPath
 
-            let lib = ValidName.appendTo validSolutionName defaultLibName
+            let lib = ValidName.appendTo validSolutionName TemplatingLib.Defaults.defaultLibName
             let libName = ValidName.value lib
-            let libPath = ValidatedPath(Path.Combine(outputPath, src, libName))
+
+            let libPath =
+                ValidatedPath(Path.Combine(outputPath, TemplatingLib.Defaults.src, libName))
 
             let selectedLanguage = Language.CSharp
 
@@ -114,9 +129,14 @@ let main argv =
             printfn "Patching lib project files 1/1..."
             let! _ = libProject |> tryReplacePropertyGroupFromFile selectedLanguage
 
-            let test = ValidName.appendTo validSolutionName defaultLibTestName
+            let test =
+                ValidName.appendTo validSolutionName TemplatingLib.Defaults.defaultLibTestName
+
             let testName = ValidName.value test
-            let testPath = ValidatedPath(Path.Combine(outputPath, tests, testName))
+
+            let testPath =
+                ValidatedPath(Path.Combine(outputPath, TemplatingLib.Defaults.tests, testName))
+
             printfn $"Creating test: %s{testName}"
 
             let! testProject =
