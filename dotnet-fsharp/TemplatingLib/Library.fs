@@ -174,3 +174,91 @@ module Io =
             File.WriteAllText(file, newXml) |> Ok
         with e ->
             Error(CantRemoveItemGroup e.Message)
+
+    let workflow solutionName outputDirectory templates =
+        let (rootBuildPropsTemplate,
+             srcDirBuildPropsTemplate,
+             testsDirBuildPropsTemplate,
+             rootPackagesTemplate,
+             gitAttributesTemplate,
+             forceOverWrite) =
+            templates
+
+        result {
+            let! validSolutionName = ValidName.create solutionName
+
+            let! outputPath = tryToCreateOutputDirectory outputDirectory
+
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, Defaults.src))
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, Defaults.tests))
+
+            let! _ = tryCreateConfigFile GitIgnore outputPath
+            let! _ = tryCreateConfigFile EditorConfig outputPath
+            let! _ = tryCreateConfigFile GlobalJson outputPath
+
+            let! _ = tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, Defaults.DirectoryBuildProps))
+
+            let! _ = tryCopy rootPackagesTemplate (Path.Combine(outputPath, Defaults.DirectoryPackagesProps))
+
+            let! _ = tryCopy gitAttributesTemplate (Path.Combine(outputPath, Defaults.gitAttributes))
+
+            let! _ =
+                tryCopy srcDirBuildPropsTemplate (Path.Combine(outputPath, Defaults.src, Defaults.DirectoryBuildProps))
+
+            let! _ =
+                tryCopy
+                    testsDirBuildPropsTemplate
+                    (Path.Combine(outputPath, Defaults.tests, Defaults.DirectoryBuildProps))
+
+            printfn $"Creating solution: %s{solutionName}"
+            let! _ = tryCreateSolution solutionName outputPath
+
+            let lib = ValidName.appendTo validSolutionName Defaults.defaultLibName
+            let libName = ValidName.value lib
+
+            let libPath = ValidatedPath(Path.Combine(outputPath, Defaults.src, libName))
+
+            let selectedLanguage = Language.CSharp
+
+            let! libProject =
+                tryToCreateDotnetProjectWithoutRestore
+                    { ProjectCreationInputs.ProjectType = ProjectType.ClassLib
+                      ProjectCreationInputs.ProjectName = lib
+                      ProjectCreationInputs.Language = selectedLanguage
+                      ProjectCreationInputs.Path = libPath
+                      ProjectCreationInputs.ForceOverWrite = forceOverWrite }
+
+            printfn "Patching lib project files 1/1..."
+            let! _ = libProject |> tryReplacePropertyGroupFromFile selectedLanguage
+
+            let test = ValidName.appendTo validSolutionName Defaults.defaultLibTestName
+
+            let testName = ValidName.value test
+
+            let testPath = ValidatedPath(Path.Combine(outputPath, Defaults.tests, testName))
+
+            printfn $"Creating test: %s{testName}"
+
+            let! testProject =
+                tryToCreateDotnetProjectWithoutRestore
+                    { ProjectCreationInputs.ProjectType = ProjectType.XUnit
+                      ProjectCreationInputs.ProjectName = test
+                      ProjectCreationInputs.Language = selectedLanguage
+                      ProjectCreationInputs.Path = testPath
+                      ProjectCreationInputs.ForceOverWrite = forceOverWrite }
+
+            printfn "Creating dependencies..."
+            let! _ = tryAddProjectDependency testPath libPath
+
+            printfn "Patching test project files 1/2..."
+            let! _ = testProject |> tryReplacePropertyGroupFromFile selectedLanguage
+            printfn "Patching test project files 2/2..."
+            let! _ = testProject |> tryReplaceItemGroupFromFile selectedLanguage
+
+            printfn "Adding projects to solution file..."
+            let! _ = tryAddProjectToSolution outputPath libPath
+            let! _ = tryAddProjectToSolution outputPath testPath
+
+            printfn "Done"
+            return ()
+        }
