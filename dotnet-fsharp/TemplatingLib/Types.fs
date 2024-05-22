@@ -44,11 +44,11 @@ let convertLanguageToString =
     function
     | CSharp -> "c#"
     | FSharp -> "f#"
-    
+
 let languageToConfigExtension =
-        function
-        | CSharp -> "csproj"
-        | FSharp -> "fsproj"
+    function
+    | CSharp -> "csproj"
+    | FSharp -> "fsproj"
 
 type ValidName = private ValidName of string
 

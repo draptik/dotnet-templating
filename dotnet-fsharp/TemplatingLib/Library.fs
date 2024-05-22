@@ -144,24 +144,22 @@ module Io =
     let getConfigFile (language: Language) (path: ValidatedPath) =
         let ext = languageToConfigExtension language
         $"{path}.{ext}"
-        
-    let tryRemovePropertyGroupFromFile (language: Language) (path: ValidatedPath) =
+
+    let tryRemoveFirstXmlProp language path fn errType =
         let file = getConfigFile language path
+
         try
             let xmlString = File.ReadAllText file
-            let newXml = removeFirstPropertyGroupFromXml xmlString
+            let newXml = fn xmlString
             File.WriteAllText(file, newXml) |> Ok
         with e ->
-            Error(CantRemovePropertyGroup e.Message)
+            Error(errType e.Message)
+
+    let tryRemovePropertyGroupFromFile (language: Language) (path: ValidatedPath) =
+        tryRemoveFirstXmlProp language path removeFirstPropertyGroupFromXml CantRemovePropertyGroup
 
     let tryRemoveItemGroupFromFile (language: Language) (path: ValidatedPath) =
-        let file = getConfigFile language path
-        try
-            let xmlString = File.ReadAllText file
-            let newXml = removeFirstItemGroupFromXml xmlString
-            File.WriteAllText(file, newXml) |> Ok
-        with e ->
-            Error(CantRemoveItemGroup e.Message)
+        tryRemoveFirstXmlProp language path removeFirstItemGroupFromXml CantRemoveItemGroup
 
     let workflow solutionName outputDirectory templates =
 
