@@ -202,30 +202,30 @@ module Io =
 
             let! _ = tryCreateSolution solutionName outputPath
 
-            let lib = ValidName.appendTo validSolutionName defaultLibName
+            let libProjectName = ValidName.appendTo validSolutionName defaultLibName
 
             let libPath =
-                ValidatedPath(Path.Combine(outputPath, srcFolder, ValidName.value lib))
+                ValidatedPath(Path.Combine(outputPath, srcFolder, ValidName.value libProjectName))
 
             let! libProject =
                 tryToCreateDotnetProjectWithoutRestore
                     { ProjectCreationInputs.ProjectType = ProjectType.ClassLib
-                      ProjectCreationInputs.ProjectName = lib
+                      ProjectCreationInputs.ProjectName = libProjectName
                       ProjectCreationInputs.Language = selectedLanguage
                       ProjectCreationInputs.Path = libPath
                       ProjectCreationInputs.ForceOverWrite = forceOverWrite }
 
             let! _ = libProject |> tryRemovePropertyGroupFromFile selectedLanguage
 
-            let test = ValidName.appendTo validSolutionName defaultLibTestName
+            let testProjectName = ValidName.appendTo validSolutionName defaultLibTestName
 
             let testPath =
-                ValidatedPath(Path.Combine(outputPath, testsFolder, ValidName.value test))
+                ValidatedPath(Path.Combine(outputPath, testsFolder, ValidName.value testProjectName))
 
             let! testProject =
                 tryToCreateDotnetProjectWithoutRestore
                     { ProjectCreationInputs.ProjectType = ProjectType.XUnit
-                      ProjectCreationInputs.ProjectName = test
+                      ProjectCreationInputs.ProjectName = testProjectName
                       ProjectCreationInputs.Language = selectedLanguage
                       ProjectCreationInputs.Path = testPath
                       ProjectCreationInputs.ForceOverWrite = forceOverWrite }
