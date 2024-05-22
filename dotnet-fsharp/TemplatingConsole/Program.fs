@@ -4,7 +4,7 @@ open System
 open System.IO
 open Argu
 
-open TemplatingConsole.Arguments
+open Arguments
 open TemplatingLib.Io
 
 let errorHandler =
@@ -24,41 +24,41 @@ let main argv =
 
     let resourceDirectory =
         Path.GetFullPath(
-            results.GetResult(Resource_Directory, defaultValue = TemplatingLib.Defaults.defaultResourceDirectory)
+            results.GetResult(Resource_Directory, defaultValue = TemplatingLib.Constants.defaultResourceDirectory)
         )
 
     let solutionName =
-        results.GetResult(Solution_Name, defaultValue = TemplatingLib.Defaults.defaultSolutionName)
+        results.GetResult(Solution_Name, defaultValue = TemplatingLib.Constants.defaultSolutionName)
 
     let outputDirectory =
-        results.GetResult(Output_Directory, defaultValue = TemplatingLib.Defaults.defaultOutputDirectory)
+        results.GetResult(Output_Directory, defaultValue = TemplatingLib.Constants.defaultOutputDirectory)
 
     let forceOverWrite =
-        results.GetResult(Force, defaultValue = TemplatingLib.Defaults.defaultForceOverwrite)
+        results.GetResult(Force, defaultValue = TemplatingLib.Constants.defaultForceOverwrite)
 
     printfn $"Creating root folder: %s{outputDirectory}"
 
     let rootBuildPropsTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Defaults.DirectoryBuildProps}.template")
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryBuildProps}.template")
 
     let rootPackagesTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Defaults.DirectoryPackagesProps}.template")
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryPackagesProps}.template")
 
     let gitAttributesTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Defaults.gitAttributes}.template")
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.gitAttributes}.template")
 
     let srcDirBuildPropsTemplate =
         Path.Combine(
             resourceDirectory,
-            TemplatingLib.Defaults.src,
-            $"{TemplatingLib.Defaults.DirectoryBuildProps}.template"
+            TemplatingLib.Constants.src,
+            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
         )
 
     let testsDirBuildPropsTemplate =
         Path.Combine(
             resourceDirectory,
-            TemplatingLib.Defaults.tests,
-            $"{TemplatingLib.Defaults.DirectoryBuildProps}.template"
+            TemplatingLib.Constants.tests,
+            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
         )
 
     let result =

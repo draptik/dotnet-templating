@@ -184,41 +184,44 @@ module Io =
              forceOverWrite) =
             templates
 
+        let selectedLanguage = Language.CSharp
+
         result {
             let! validSolutionName = ValidName.create solutionName
 
             let! outputPath = tryToCreateOutputDirectory outputDirectory
 
-            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, Defaults.src))
-            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, Defaults.tests))
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, Constants.src))
+            let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, Constants.tests))
 
             let! _ = tryCreateConfigFile GitIgnore outputPath
             let! _ = tryCreateConfigFile EditorConfig outputPath
             let! _ = tryCreateConfigFile GlobalJson outputPath
 
-            let! _ = tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, Defaults.DirectoryBuildProps))
+            let! _ = tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, Constants.DirectoryBuildProps))
 
-            let! _ = tryCopy rootPackagesTemplate (Path.Combine(outputPath, Defaults.DirectoryPackagesProps))
+            let! _ = tryCopy rootPackagesTemplate (Path.Combine(outputPath, Constants.DirectoryPackagesProps))
 
-            let! _ = tryCopy gitAttributesTemplate (Path.Combine(outputPath, Defaults.gitAttributes))
+            let! _ = tryCopy gitAttributesTemplate (Path.Combine(outputPath, Constants.gitAttributes))
 
             let! _ =
-                tryCopy srcDirBuildPropsTemplate (Path.Combine(outputPath, Defaults.src, Defaults.DirectoryBuildProps))
+                tryCopy
+                    srcDirBuildPropsTemplate
+                    (Path.Combine(outputPath, Constants.src, Constants.DirectoryBuildProps))
 
             let! _ =
                 tryCopy
                     testsDirBuildPropsTemplate
-                    (Path.Combine(outputPath, Defaults.tests, Defaults.DirectoryBuildProps))
+                    (Path.Combine(outputPath, Constants.tests, Constants.DirectoryBuildProps))
 
             printfn $"Creating solution: %s{solutionName}"
             let! _ = tryCreateSolution solutionName outputPath
 
-            let lib = ValidName.appendTo validSolutionName Defaults.defaultLibName
+            let lib = ValidName.appendTo validSolutionName Constants.defaultLibName
             let libName = ValidName.value lib
+            let libPath = ValidatedPath(Path.Combine(outputPath, Constants.src, libName))
 
-            let libPath = ValidatedPath(Path.Combine(outputPath, Defaults.src, libName))
-
-            let selectedLanguage = Language.CSharp
+            printfn $"Creating lib project: %s{libPath}"
 
             let! libProject =
                 tryToCreateDotnetProjectWithoutRestore
@@ -231,13 +234,11 @@ module Io =
             printfn "Patching lib project files 1/1..."
             let! _ = libProject |> tryReplacePropertyGroupFromFile selectedLanguage
 
-            let test = ValidName.appendTo validSolutionName Defaults.defaultLibTestName
-
+            let test = ValidName.appendTo validSolutionName Constants.defaultLibTestName
             let testName = ValidName.value test
+            let testPath = ValidatedPath(Path.Combine(outputPath, Constants.tests, testName))
 
-            let testPath = ValidatedPath(Path.Combine(outputPath, Defaults.tests, testName))
-
-            printfn $"Creating test: %s{testName}"
+            printfn $"Creating test project: %s{testName}"
 
             let! testProject =
                 tryToCreateDotnetProjectWithoutRestore
@@ -247,7 +248,6 @@ module Io =
                       ProjectCreationInputs.Path = testPath
                       ProjectCreationInputs.ForceOverWrite = forceOverWrite }
 
-            printfn "Creating dependencies..."
             let! _ = tryAddProjectDependency testPath libPath
 
             printfn "Patching test project files 1/2..."
@@ -255,7 +255,6 @@ module Io =
             printfn "Patching test project files 2/2..."
             let! _ = testProject |> tryReplaceItemGroupFromFile selectedLanguage
 
-            printfn "Adding projects to solution file..."
             let! _ = tryAddProjectToSolution outputPath libPath
             let! _ = tryAddProjectToSolution outputPath testPath
 

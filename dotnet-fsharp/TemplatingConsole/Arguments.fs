@@ -1,4 +1,4 @@
-namespace TemplatingConsole.Arguments
+module Arguments
 
 open Argu
 
@@ -6,7 +6,7 @@ type CliArguments =
     | [<AltCommandLine("-n"); Unique>] Solution_Name of name: string
     | [<AltCommandLine("-o"); Unique>] Output_Directory of path: string
     | [<AltCommandLine("-r"); Unique>] Resource_Directory of path: string
-    | [<AltCommandLine("-f"); Unique>] Force of bool // TODO
+    | [<AltCommandLine("-f"); Unique>] Force of bool
 
     interface IArgParserTemplate with
         member s.Usage =

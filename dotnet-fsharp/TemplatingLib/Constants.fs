@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module TemplatingLib.Defaults
+module TemplatingLib.Constants
 
 open Microsoft.FSharp.Core
 
