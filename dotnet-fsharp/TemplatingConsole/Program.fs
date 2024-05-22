@@ -36,8 +36,6 @@ let main argv =
     let forceOverWrite =
         results.GetResult(Force, defaultValue = TemplatingLib.Constants.defaultForceOverwrite)
 
-    printfn $"Creating root folder: %s{outputDirectory}"
-
     let rootBuildPropsTemplate =
         Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryBuildProps}.template")
 

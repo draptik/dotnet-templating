@@ -62,10 +62,5 @@ type ProjectCreationInputs =
 let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
     let projectType = convertProjectTypeToString inputs.ProjectType
     let projectName = ValidName.value inputs.ProjectName
-
     let language = convertLanguageToString inputs.Language
-
-    printfn
-        $"unwrapping project creation inputs:\n\tProjectName: %s{projectName},\n\tProjectType: %s{projectType},\n\tLanguage: %s{language},\n\tPath: %s{inputs.Path}..."
-
     (projectName, projectType, language, inputs.Path, inputs.ForceOverWrite)
