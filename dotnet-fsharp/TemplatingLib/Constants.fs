@@ -36,3 +36,9 @@ let defaultLibName = "MyLib"
 
 [<Literal>]
 let defaultLibTestName = "MyLib.Tests"
+
+[<Literal>]
+let latestLts = "8.0.0"
+
+[<Literal>]
+let rollForwardPolicy = "latestMajor"

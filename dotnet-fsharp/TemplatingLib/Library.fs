@@ -104,21 +104,13 @@ module Io =
             |> tryToCreateDotnetProjectWithoutRestore
             |> Result.mapError (fun e -> [ e ])
 
-    let configTypeToString =
-        function
-        | GitIgnore -> "gitignore"
-        | EditorConfig -> "editorconfig"
-        | GlobalJson -> "globaljson"
-
     let tryCreateConfigFile (configType: ConfigType) (path: string) : Result<string, ApplicationError> =
-        let latestLts = "8.0.0"
-        let rollForwardPolicy = "latestMajor"
         let config = configTypeToString configType
 
         match configType with
         | GlobalJson ->
             startDotnetProcess
-                $"new %s{config} --sdk-version %s{latestLts} --roll-forward %s{rollForwardPolicy} --output %s{path}"
+                $"new %s{config} --sdk-version %s{Constants.latestLts} --roll-forward %s{Constants.rollForwardPolicy} --output %s{path}"
         | _ -> startDotnetProcess $"new %s{config} --output %s{path}"
 
     let tryCopy (source: string) (target: string) =
@@ -136,15 +128,8 @@ module Io =
         startDotnetProcess $"sln %s{solutionPath} add %s{projectPath}" |> Ok
 
     let tryAddProjectDependency (addTo: ValidatedPath) (validDependentPath: ValidatedPath) =
-        let project = addTo
-        let dependsOn = validDependentPath
-        printfn $"Creating dependency: %s{project} depends on %s{dependsOn} ..."
-        startDotnetProcess $"add %s{project} reference %s{dependsOn}" |> Ok
-
-    let languageToConfigExtension =
-        function
-        | CSharp -> "csproj"
-        | FSharp -> "fsproj"
+        printfn $"Creating dependency: %s{addTo} depends on %s{validDependentPath} ..."
+        startDotnetProcess $"add %s{addTo} reference %s{validDependentPath}" |> Ok
 
     let removeFromXml (xml: string) (element: string) =
         let doc = System.Xml.Linq.XDocument.Parse xml
@@ -156,10 +141,12 @@ module Io =
 
     let removeFirstItemGroupFromXml (xml: string) = removeFromXml xml "ItemGroup"
 
-    let tryRemovePropertyGroupFromFile (language: Language) (path: ValidatedPath) =
+    let getConfigFile (language: Language) (path: ValidatedPath) =
         let ext = languageToConfigExtension language
-        let file = $"{path}.{ext}"
-
+        $"{path}.{ext}"
+        
+    let tryRemovePropertyGroupFromFile (language: Language) (path: ValidatedPath) =
+        let file = getConfigFile language path
         try
             let xmlString = File.ReadAllText file
             let newXml = removeFirstPropertyGroupFromXml xmlString
@@ -168,9 +155,7 @@ module Io =
             Error(CantRemovePropertyGroup e.Message)
 
     let tryRemoveItemGroupFromFile (language: Language) (path: ValidatedPath) =
-        let ext = languageToConfigExtension language
-        let file = $"{path}.{ext}"
-
+        let file = getConfigFile language path
         try
             let xmlString = File.ReadAllText file
             let newXml = removeFirstItemGroupFromXml xmlString

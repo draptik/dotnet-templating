@@ -7,6 +7,12 @@ type ConfigType =
     | EditorConfig
     | GlobalJson
 
+let configTypeToString =
+    function
+    | GitIgnore -> "gitignore"
+    | EditorConfig -> "editorconfig"
+    | GlobalJson -> "globaljson"
+
 type ValidatedPath = string
 
 type ProjectType =
@@ -38,6 +44,11 @@ let convertLanguageToString =
     function
     | CSharp -> "c#"
     | FSharp -> "f#"
+    
+let languageToConfigExtension =
+        function
+        | CSharp -> "csproj"
+        | FSharp -> "fsproj"
 
 type ValidName = private ValidName of string
 
