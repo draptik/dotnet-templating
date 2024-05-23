@@ -1,6 +1,6 @@
 module Tests
 
-open System.Diagnostics
+open System.IO
 open Xunit
 open Swensen.Unquote
 
@@ -26,95 +26,25 @@ let hasErrors (errorsExpected: ApplicationError list) (results: Result<Validated
 let hasError (error: ApplicationError) (results: Result<ValidatedPath, ApplicationError list>) =
     hasErrors [ error ] results
 
-let validProjectTypeClassLib = "classlib"
-let validProjectTypeXUnit = "xunit"
-let validProjectName = "Foo"
-let validPath = "~/tmp/foo"
-let validLanguageCSharp = "c#"
-let validLanguageFSharp = "c#"
+let validateProjectName name =
+    let x = ValidName.create name
 
-let forceOverwrite = true
+    match x with
+    | Ok v -> v
+    | Error _ -> failwith $"could not validate project name '{name}'"
 
-[<Theory>]
-[<InlineData("classlib", "c#")>]
-[<InlineData("xunit", "f#")>]
-let ``create project - happy case w/ linux`` validProjectType validLanguage =
-    let actual =
-        createDotnetProject validProjectType validProjectName validPath validLanguage forceOverwrite
+[<Fact>]
+let ``create project - happy case w/ linux`` () =
+    let inputs =
+        { ProjectName = validateProjectName "Foo"
+          ProjectType = ClassLib
+          Language = CSharp
+          Path = ValidatedPath "~/tmp/foo"
+          ForceOverWrite = true }
+
+    let actual = tryToCreateDotnetProjectWithoutRestore inputs
 
     actual |> isOk
-
-[<Fact>]
-let ``create project - invalid project type`` () =
-    let invalidProjectType = "invalidProjectType"
-
-    let actual =
-        createDotnetProject invalidProjectType validProjectName validPath validLanguageCSharp forceOverwrite
-
-    let expected = (UnknownProjectType invalidProjectType)
-    actual |> hasError expected
-
-[<Fact>]
-let ``create project - invalid project name`` () =
-    let invalidProjectName = ""
-
-    let actual =
-        createDotnetProject validProjectTypeClassLib invalidProjectName validPath validLanguageCSharp forceOverwrite
-
-    let expected = (InvalidName "Name must not be empty")
-    actual |> hasError expected
-
-[<Fact>]
-let ``create project - invalid path / empty`` () =
-    let invalidPath = ""
-
-    let actual =
-        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp forceOverwrite
-
-    let expected =
-        (CantCreateOutputDirectory "The value cannot be an empty string. (Parameter 'path')")
-
-    actual |> hasError expected
-
-[<Fact>]
-let ``create project - invalid path / access denied - linux`` () =
-    let invalidPath = "/doesnotexist"
-
-    let actual =
-        createDotnetProject validProjectTypeClassLib validProjectName invalidPath validLanguageCSharp forceOverwrite
-
-    let expected =
-        (CantCreateOutputDirectory $"Access to the path '%s{invalidPath}' is denied.")
-
-    actual |> hasError expected
-
-[<Fact>]
-let ``create project - invalid language`` () =
-    let invalidLanguage = "vb.net"
-
-    let actual =
-        createDotnetProject validProjectTypeClassLib validProjectName validPath invalidLanguage forceOverwrite
-
-    let expected = (UnknownLanguage invalidLanguage)
-    actual |> hasError expected
-
-[<Fact>]
-let ``create project - all inputs invalid`` () =
-    let invalidProjectType = "invalidProjectType"
-    let invalidProjectName = ""
-    let invalidPath = "/doesnotexist"
-    let invalidLanguage = "vb.net"
-
-    let actual =
-        createDotnetProject invalidProjectType invalidProjectName invalidPath invalidLanguage forceOverwrite
-
-    let expected =
-        [ (UnknownLanguage invalidLanguage)
-          (CantCreateOutputDirectory $"Access to the path '%s{invalidPath}' is denied.")
-          (InvalidName "Name must not be empty")
-          (UnknownProjectType invalidProjectType) ]
-
-    actual |> hasErrors expected
 
 [<Fact>]
 let ``xml experiment 1 - single PropertyGroup present -> remove first PropertyGroup`` () =
@@ -126,7 +56,7 @@ let ``xml experiment 1 - single PropertyGroup present -> remove first PropertyGr
     prop.Remove()
     let actual = doc.ToString()
     let expected = "<Project />"
-    test <@ actual = expected @>
+    actual =! expected
 
 [<Fact>]
 let ``xml experiment 2 - multiple PropertyGroups present -> remove first PropertyGroup`` () =
@@ -138,7 +68,7 @@ let ``xml experiment 2 - multiple PropertyGroups present -> remove first Propert
     prop.Remove()
     let actual = doc.ToString()
     let expected = "<Project>\n  <PropertyGroup>foo</PropertyGroup>\n</Project>"
-    test <@ actual = expected @>
+    actual =! expected
 
 [<Fact>]
 let ``xml experiment 3 - multiple PropertyGroups present -> remove all PropertyGroups`` () =
@@ -149,7 +79,7 @@ let ``xml experiment 3 - multiple PropertyGroups present -> remove all PropertyG
     doc.Descendants("PropertyGroup") |> Seq.toList |> List.iter (_.Remove())
     let actual = doc.ToString()
     let expected = "<Project />"
-    test <@ actual = expected @>
+    actual =! expected
 
 [<Fact>]
 let ``xml experiment 4 - multiple ItemGroups present -> remove first ItemGroup and preserve PropertyGroup`` () =
@@ -165,36 +95,7 @@ let ``xml experiment 4 - multiple ItemGroups present -> remove first ItemGroup a
     let expected =
         "<Project>\n  <PropertyGroup>\n    <TargetFramework>net5.0</TargetFramework>\n  </PropertyGroup>\n  <ItemGroup>bar</ItemGroup>\n</Project>"
 
-    test <@ actual = expected @>
-
-
-let processStart (executable: string) (arguments: string) =
-    let startInfo = ProcessStartInfo(executable, arguments)
-    startInfo.UseShellExecute <- false
-    startInfo.RedirectStandardOutput <- true
-    startInfo.RedirectStandardError <- true
-    startInfo.CreateNoWindow <- true
-    startInfo.RedirectStandardOutput <- true
-    startInfo.RedirectStandardError <- true
-
-    let proc = new Process()
-    proc.StartInfo <- startInfo
-
-    try
-        proc.Start() |> ignore // NOTE This can throw an exception if the executable is not found
-
-        let stdout = proc.StandardOutput.ReadToEnd()
-        let stderr = proc.StandardError.ReadToEnd()
-
-        proc.WaitForExit()
-
-        if stderr.Length > 0 then
-            Error $"%s{stderr}"
-        else
-            Ok $"%s{stdout}"
-    with e ->
-        Error
-            $"Process.Start() failed. Given executable: %s{executable} - Given arguments: %s{arguments} - Error message:  %s{e.Message}"
+    actual =! expected
 
 [<Fact>]
 let ``process valid - dotnet --info`` () =
@@ -211,8 +112,9 @@ let ``process invalid`` () =
     match actual with
     | Ok _ -> true =! false
     | Error e ->
-        e.StartsWith "Process.Start() failed. Given executable: doesnotexist - Given arguments: foo"
-        =! true
+        match e with
+        | ProcessStartError _ -> true =! true
+        | _ -> true =! false
 
 [<Fact>]
 let ``process valid - invalid arguments`` () =
@@ -220,61 +122,58 @@ let ``process valid - invalid arguments`` () =
 
     match actual with
     | Ok _ -> true =! false
-    | Error e -> e.Contains "Could not execute" =! true
-
-[<Fact>]
-let ``process valid & arguments syntactically valid, but invalid path - fails w/ permission denied`` () =
-    let actual =
-        processStart "dotnet" "new classlib --name Foo --output /doesnotexist --no-restore"
-
-    match actual with
-    | Ok _ -> true =! false
-    | Error e -> e.Contains "Permission denied" =! true
-
-open System.IO
+    | Error e ->
+        match e with
+        | DotNetProcessError _ -> true =! true
+        | _ -> true =! false
 
 [<Fact>]
 let ``workflow - happy case`` () =
     let resourceDirectory =
         Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
 
-    let slnName = TemplatingLib.Constants.defaultSolutionName
-    let outputDir = TemplatingLib.Constants.defaultOutputDirectory
-    let forceOverwrite = TemplatingLib.Constants.defaultForceOverwrite
+    let validSolutionName = TemplatingLib.Constants.defaultSolutionName
+    let validOutputDirectory = TemplatingLib.Constants.defaultOutputDirectory
 
-    let rootBuildPropsTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryBuildProps}.template")
-
-    let rootPackagesTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryPackagesProps}.template")
-
-    let gitAttributesTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.gitAttributes}.template")
-
-    let srcDirBuildPropsTemplate =
-        Path.Combine(
-            resourceDirectory,
-            TemplatingLib.Constants.src,
-            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
-        )
-
-    let testsDirBuildPropsTemplate =
-        Path.Combine(
-            resourceDirectory,
-            TemplatingLib.Constants.tests,
-            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
-        )
-
-    let defaultTemplates =
-        (rootBuildPropsTemplate,
-         srcDirBuildPropsTemplate,
-         testsDirBuildPropsTemplate,
-         rootPackagesTemplate,
-         gitAttributesTemplate,
-         forceOverwrite)
-
-    let actual = workflow slnName outputDir defaultTemplates
+    let actual =
+        workflow validSolutionName validOutputDirectory (defaultTemplates resourceDirectory)
 
     match actual with
     | Ok _ -> true =! true
     | Error _ -> true =! false
+
+[<Fact>]
+let ``workflow - invalid solution name`` () =
+    let resourceDirectory =
+        Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
+
+    let invalidSolutionName = ""
+    let validOutputDirectory = TemplatingLib.Constants.defaultOutputDirectory
+
+    let actual =
+        workflow invalidSolutionName validOutputDirectory (defaultTemplates resourceDirectory)
+
+    match actual with
+    | Ok _ -> true =! false
+    | Error e ->
+        match e with
+        | InvalidName _ -> true =! true
+        | _ -> true =! false
+
+[<Fact>]
+let ``workflow - invalid output path`` () =
+    let resourceDirectory =
+        Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
+
+    let validSolutionName = TemplatingLib.Constants.defaultSolutionName
+    let invalidOutputDirectory = "/test"
+
+    let actual =
+        workflow validSolutionName invalidOutputDirectory (defaultTemplates resourceDirectory)
+
+    match actual with
+    | Ok _ -> true =! false
+    | Error e ->
+        match e with
+        | CantCreateOutputDirectory _ -> true =! true
+        | _ -> true =! false

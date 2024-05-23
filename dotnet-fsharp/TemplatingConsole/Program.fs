@@ -5,6 +5,7 @@ open System.IO
 open Argu
 
 open Arguments
+open TemplatingLib.Types
 open TemplatingLib.Io
 
 let errorHandler =
@@ -33,41 +34,8 @@ let main argv =
     let outputDirectory =
         results.GetResult(Output_Directory, defaultValue = TemplatingLib.Constants.defaultOutputDirectory)
 
-    let forceOverWrite =
-        results.GetResult(Force, defaultValue = TemplatingLib.Constants.defaultForceOverwrite)
-
-    let rootBuildPropsTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryBuildProps}.template")
-
-    let rootPackagesTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryPackagesProps}.template")
-
-    let gitAttributesTemplate =
-        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.gitAttributes}.template")
-
-    let srcDirBuildPropsTemplate =
-        Path.Combine(
-            resourceDirectory,
-            TemplatingLib.Constants.src,
-            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
-        )
-
-    let testsDirBuildPropsTemplate =
-        Path.Combine(
-            resourceDirectory,
-            TemplatingLib.Constants.tests,
-            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
-        )
-
-    let defaultTemplates =
-        (rootBuildPropsTemplate,
-         srcDirBuildPropsTemplate,
-         testsDirBuildPropsTemplate,
-         rootPackagesTemplate,
-         gitAttributesTemplate,
-         forceOverWrite)
-
-    let result = workflow solutionName outputDirectory defaultTemplates
+    let result =
+        workflow solutionName outputDirectory (defaultTemplates resourceDirectory)
 
     printfn $"Workflow: %A{result}"
 

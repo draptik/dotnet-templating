@@ -74,36 +74,6 @@ module Io =
         |> Result.mapError id
         |> Result.map (fun _ -> Path.Combine(path, name) |> ValidatedPath)
 
-    let createDotnetProject
-        (rawProjectType: string)
-        (rawName: string)
-        (rawPath: string)
-        (rawLanguage: string)
-        (forceOverwrite: bool)
-        : Result<ValidatedPath, ApplicationError list> =
-
-        let tryValidatingInputs =
-            validation {
-                let! projectName = ValidName.create rawName
-                and! projectType = tryConvertToProjectType rawProjectType
-                and! language = tryConvertToLanguage rawLanguage
-                and! path = tryToCreateOutputDirectory rawPath
-
-                return
-                    { ProjectName = projectName
-                      ProjectType = projectType
-                      Language = language
-                      Path = path
-                      ForceOverWrite = forceOverwrite }
-            }
-
-        match tryValidatingInputs with
-        | Error e -> Error e
-        | Ok inputs ->
-            inputs
-            |> tryToCreateDotnetProjectWithoutRestore
-            |> Result.mapError (fun e -> [ e ])
-
     let tryCreateConfigFile
         (configType: ConfigType)
         (path: string)
@@ -176,16 +146,14 @@ module Io =
     let tryRemoveItemGroupFromFile (language: Language) (path: ValidatedPath) =
         tryRemoveFirstXmlProp language path removeFirstItemGroupFromXml CantRemoveItemGroup
 
-    let workflow solutionName outputDirectory templates =
+    let workflow solutionName outputDirectory (templates: Templates) =
 
-        // destructuring the templates tuple
-        let (rootBuildPropsTemplate,
-             srcDirBuildPropsTemplate,
-             testsDirBuildPropsTemplate,
-             rootPackagesTemplate,
-             gitAttributesTemplate,
-             forceOverWrite) =
-            templates
+        let rootBuildPropsTemplate = templates.RootBuildProps
+        let srcDirBuildPropsTemplate = templates.SrcDirBuildProps
+        let testsDirBuildPropsTemplate = templates.TestDirBuildProps
+        let rootPackagesTemplate = templates.RootPackagesProps
+        let gitAttributesTemplate = templates.GitAttributes
+        let forceOverWrite = templates.ForceOverwrite
 
         let selectedLanguage = Language.CSharp
 

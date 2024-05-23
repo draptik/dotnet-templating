@@ -1,5 +1,6 @@
 module TemplatingLib.Types
 
+open System.IO
 open Errors
 
 type ConfigType =
@@ -75,3 +76,36 @@ let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
     let projectName = ValidName.value inputs.ProjectName
     let language = convertLanguageToString inputs.Language
     (projectName, projectType, language, inputs.Path, inputs.ForceOverWrite)
+
+type Templates =
+    { RootBuildProps: string
+      SrcDirBuildProps: string
+      TestDirBuildProps: string
+      RootPackagesProps: string
+      GitAttributes: string
+      ForceOverwrite: bool }
+
+let defaultTemplates resourceDirectory =
+    let forceOverwrite = Constants.defaultForceOverwrite
+
+    let rootBuildPropsTemplate =
+        Path.Combine(resourceDirectory, $"{Constants.DirectoryBuildProps}.template")
+
+    let rootPackagesTemplate =
+        Path.Combine(resourceDirectory, $"{Constants.DirectoryPackagesProps}.template")
+
+    let gitAttributesTemplate =
+        Path.Combine(resourceDirectory, $"{Constants.gitAttributes}.template")
+
+    let srcDirBuildPropsTemplate =
+        Path.Combine(resourceDirectory, Constants.src, $"{Constants.DirectoryBuildProps}.template")
+
+    let testsDirBuildPropsTemplate =
+        Path.Combine(resourceDirectory, Constants.tests, $"{Constants.DirectoryBuildProps}.template")
+
+    { RootBuildProps = rootBuildPropsTemplate
+      SrcDirBuildProps = srcDirBuildPropsTemplate
+      TestDirBuildProps = testsDirBuildPropsTemplate
+      RootPackagesProps = rootPackagesTemplate
+      GitAttributes = gitAttributesTemplate
+      ForceOverwrite = forceOverwrite }
