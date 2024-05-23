@@ -136,7 +136,7 @@ let ``workflow - happy case`` () =
     let validOutputDirectory = TemplatingLib.Constants.defaultOutputDirectory
 
     let actual =
-        workflow validSolutionName validOutputDirectory (defaultTemplates resourceDirectory)
+        workflow validSolutionName validOutputDirectory (getDefaultTemplates resourceDirectory)
 
     match actual with
     | Ok _ -> true =! true
@@ -151,7 +151,7 @@ let ``workflow - invalid solution name`` () =
     let validOutputDirectory = TemplatingLib.Constants.defaultOutputDirectory
 
     let actual =
-        workflow invalidSolutionName validOutputDirectory (defaultTemplates resourceDirectory)
+        workflow invalidSolutionName validOutputDirectory (getDefaultTemplates resourceDirectory)
 
     match actual with
     | Ok _ -> true =! false
@@ -169,7 +169,7 @@ let ``workflow - invalid output path`` () =
     let invalidOutputDirectory = "/test"
 
     let actual =
-        workflow validSolutionName invalidOutputDirectory (defaultTemplates resourceDirectory)
+        workflow validSolutionName invalidOutputDirectory (getDefaultTemplates resourceDirectory)
 
     match actual with
     | Ok _ -> true =! false

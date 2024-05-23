@@ -1,7 +1,6 @@
 ﻿module TemplatingConsole
 
 open System
-open System.IO
 open Argu
 
 open Arguments
@@ -22,21 +21,12 @@ let parser =
 [<EntryPoint>]
 let main argv =
     let results = parser.ParseCommandLine argv
+    let sln = getSolutionName results
+    let outDir = getOutputDirectory results
+    let resDir = getResourceDirectory results
+    let templates = getDefaultTemplates resDir
 
-    let resourceDirectory =
-        Path.GetFullPath(
-            results.GetResult(Resource_Directory, defaultValue = TemplatingLib.Constants.defaultResourceDirectory)
-        )
-
-    let solutionName =
-        results.GetResult(Solution_Name, defaultValue = TemplatingLib.Constants.defaultSolutionName)
-
-    let outputDirectory =
-        results.GetResult(Output_Directory, defaultValue = TemplatingLib.Constants.defaultOutputDirectory)
-
-    let result =
-        workflow solutionName outputDirectory (defaultTemplates resourceDirectory)
+    let result = workflow sln outDir templates
 
     printfn $"Workflow: %A{result}"
-
     0

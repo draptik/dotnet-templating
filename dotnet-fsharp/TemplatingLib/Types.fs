@@ -85,7 +85,7 @@ type Templates =
       GitAttributes: string
       ForceOverwrite: bool }
 
-let defaultTemplates resourceDirectory =
+let getDefaultTemplates resourceDirectory =
     let forceOverwrite = Constants.defaultForceOverwrite
 
     let rootBuildPropsTemplate =

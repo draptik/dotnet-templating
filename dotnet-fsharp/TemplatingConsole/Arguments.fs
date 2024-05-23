@@ -1,5 +1,6 @@
 module Arguments
 
+open System.IO
 open Argu
 
 type CliArguments =
@@ -15,3 +16,14 @@ type CliArguments =
             | Output_Directory _ -> "The directory where the project will be created"
             | Resource_Directory _ -> "The directory where the resources are located"
             | Force _ -> "Force overwrite of existing files"
+
+let getResourceDirectory (results: ParseResults<CliArguments>) =
+    Path.GetFullPath(
+        results.GetResult(Resource_Directory, defaultValue = TemplatingLib.Constants.defaultResourceDirectory)
+    )
+
+let getSolutionName (results: ParseResults<CliArguments>) =
+    results.GetResult(Solution_Name, defaultValue = TemplatingLib.Constants.defaultSolutionName)
+
+let getOutputDirectory (results: ParseResults<CliArguments>) =
+    results.GetResult(Output_Directory, defaultValue = TemplatingLib.Constants.defaultOutputDirectory)
