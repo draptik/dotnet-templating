@@ -104,14 +104,29 @@ module Io =
             |> tryToCreateDotnetProjectWithoutRestore
             |> Result.mapError (fun e -> [ e ])
 
-    let tryCreateConfigFile (configType: ConfigType) (path: string) : Result<string, ApplicationError> =
+    let tryCreateConfigFile
+        (configType: ConfigType)
+        (path: string)
+        (forceOverwrite: bool)
+        : Result<string, ApplicationError> =
         let config = configTypeToString configType
 
         match configType with
         | GlobalJson ->
-            startDotnetProcess
+            let mutable args =
                 $"new %s{config} --sdk-version %s{Constants.latestLts} --roll-forward %s{Constants.rollForwardPolicy} --output %s{path}"
-        | _ -> startDotnetProcess $"new %s{config} --output %s{path}"
+
+            if forceOverwrite then
+                args <- args + " --force"
+
+            startDotnetProcess args
+        | _ ->
+            let mutable args = $"new %s{config} --output %s{path}"
+
+            if forceOverwrite then
+                args <- args + " --force"
+
+            startDotnetProcess args
 
     let tryCopy (source: string) (target: string) =
         try
@@ -190,9 +205,9 @@ module Io =
             let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, srcFolder))
             let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, testsFolder))
 
-            let! _ = tryCreateConfigFile GitIgnore outputPath
-            let! _ = tryCreateConfigFile EditorConfig outputPath
-            let! _ = tryCreateConfigFile GlobalJson outputPath
+            let! _ = tryCreateConfigFile GitIgnore outputPath forceOverWrite
+            let! _ = tryCreateConfigFile EditorConfig outputPath forceOverWrite
+            let! _ = tryCreateConfigFile GlobalJson outputPath forceOverWrite
 
             let! _ = tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, directoryBuildProps))
             let! _ = tryCopy rootPackagesTemplate (Path.Combine(outputPath, directoryPackagesProps))

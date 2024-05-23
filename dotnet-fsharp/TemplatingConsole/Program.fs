@@ -59,16 +59,15 @@ let main argv =
             $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
         )
 
-    let result =
-        workflow
-            solutionName
-            outputDirectory
-            (rootBuildPropsTemplate,
-             srcDirBuildPropsTemplate,
-             testsDirBuildPropsTemplate,
-             rootPackagesTemplate,
-             gitAttributesTemplate,
-             forceOverWrite)
+    let defaultTemplates =
+        (rootBuildPropsTemplate,
+         srcDirBuildPropsTemplate,
+         testsDirBuildPropsTemplate,
+         rootPackagesTemplate,
+         gitAttributesTemplate,
+         forceOverWrite)
+
+    let result = workflow solutionName outputDirectory defaultTemplates
 
     printfn $"Workflow: %A{result}"
 

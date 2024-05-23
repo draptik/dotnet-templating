@@ -230,3 +230,51 @@ let ``process valid & arguments syntactically valid, but invalid path - fails w/
     match actual with
     | Ok _ -> true =! false
     | Error e -> e.Contains "Permission denied" =! true
+
+open System.IO
+
+[<Fact>]
+let ``workflow - happy case`` () =
+    let resourceDirectory =
+        Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
+
+    let slnName = TemplatingLib.Constants.defaultSolutionName
+    let outputDir = TemplatingLib.Constants.defaultOutputDirectory
+    let forceOverwrite = TemplatingLib.Constants.defaultForceOverwrite
+
+    let rootBuildPropsTemplate =
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryBuildProps}.template")
+
+    let rootPackagesTemplate =
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.DirectoryPackagesProps}.template")
+
+    let gitAttributesTemplate =
+        Path.Combine(resourceDirectory, $"{TemplatingLib.Constants.gitAttributes}.template")
+
+    let srcDirBuildPropsTemplate =
+        Path.Combine(
+            resourceDirectory,
+            TemplatingLib.Constants.src,
+            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
+        )
+
+    let testsDirBuildPropsTemplate =
+        Path.Combine(
+            resourceDirectory,
+            TemplatingLib.Constants.tests,
+            $"{TemplatingLib.Constants.DirectoryBuildProps}.template"
+        )
+
+    let defaultTemplates =
+        (rootBuildPropsTemplate,
+         srcDirBuildPropsTemplate,
+         testsDirBuildPropsTemplate,
+         rootPackagesTemplate,
+         gitAttributesTemplate,
+         forceOverwrite)
+
+    let actual = workflow slnName outputDir defaultTemplates
+
+    match actual with
+    | Ok _ -> true =! true
+    | Error _ -> true =! false
