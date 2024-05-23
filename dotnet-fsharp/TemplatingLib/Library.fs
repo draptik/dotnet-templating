@@ -35,7 +35,7 @@ module Io =
                 Ok $"%s{stdout}"
         with e ->
             Error(
-                ProcessStartError
+                CantStartProcess
                     $"Process.Start() failed. Given executable: %s{executable} - Given arguments: %s{arguments} - Error message:  %s{e.Message}"
             )
 

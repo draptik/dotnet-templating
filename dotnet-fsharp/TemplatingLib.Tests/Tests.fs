@@ -62,7 +62,7 @@ let ``process invalid`` () =
     | Ok _ -> true =! false
     | Error e ->
         match e with
-        | ProcessStartError _ -> true =! true
+        | CantStartProcess _ -> true =! true
         | _ -> true =! false
 
 [<Fact>]
