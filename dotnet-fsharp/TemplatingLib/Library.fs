@@ -15,8 +15,6 @@ module Io =
         startInfo.RedirectStandardOutput <- true
         startInfo.RedirectStandardError <- true
         startInfo.CreateNoWindow <- true
-        startInfo.RedirectStandardOutput <- true
-        startInfo.RedirectStandardError <- true
 
         let proc = new Process()
         proc.StartInfo <- startInfo
