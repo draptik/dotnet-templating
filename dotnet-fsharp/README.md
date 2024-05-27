@@ -3,9 +3,9 @@
 ## TODOs
 
 - ~~create a published artifact using `dotnet publish`~~
-  - see script `publish.sh`
+    - see script `publish.sh`
 - add github actions for
-  - ~~testing~~
-  - creating an artifact (see `dotnet publish`)
+    - ~~testing~~
+    - creating an artifact (see `dotnet publish`)
 - improve output project validation (maybe use `Verify`?)
 - If everything works: maybe create a nuget package?
