@@ -2,9 +2,10 @@
 
 ## TODOs
 
-- create an executable cli tool (`dotnet publish`)
+- ~~create a published artifact using `dotnet publish`~~
+  - see script `publish.sh`
 - add github actions for
-  - testing
+  - ~~testing~~
   - creating an artifact (see `dotnet publish`)
 - improve output project validation (maybe use `Verify`?)
 - If everything works: maybe create a nuget package?
