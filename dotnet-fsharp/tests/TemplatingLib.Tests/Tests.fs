@@ -38,11 +38,10 @@ let ``create project - happy case w/ linux`` () =
         { ProjectName = validateProjectName "Foo"
           ProjectType = ClassLib
           Language = CSharp
-          Path = ValidatedPath "~/tmp/foo"
+          Path = "~/tmp/foo"
           ForceOverWrite = true }
 
     let actual = tryToCreateDotnetProjectWithoutRestore inputs
-
     actual |> isOk
 
 [<Fact>]

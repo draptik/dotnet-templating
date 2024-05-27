@@ -1,5 +1,6 @@
 module TemplatingLib.Types
 
+open System
 open System.IO
 open Errors
 
@@ -71,11 +72,21 @@ type ProjectCreationInputs =
       Path: ValidatedPath
       ForceOverWrite: bool }
 
+let sanitizePath (unvalidatedPath: string) =
+    if OperatingSystem.IsWindows() then
+        // Not really sure what to do about windows paths?
+        // Deal with it later...
+        unvalidatedPath
+    else
+        // dotnet can't handle linux '~', so we need to replace it with the user's home directory
+        unvalidatedPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
+        
 let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
     let projectType = convertProjectTypeToString inputs.ProjectType
     let projectName = ValidName.value inputs.ProjectName
     let language = convertLanguageToString inputs.Language
-    (projectName, projectType, language, inputs.Path, inputs.ForceOverWrite)
+    let sanitizedPath = sanitizePath inputs.Path
+    (projectName, projectType, language, sanitizedPath, inputs.ForceOverWrite)
 
 type Templates =
     { RootBuildProps: string

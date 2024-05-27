@@ -38,19 +38,12 @@ module Io =
             )
 
     let startDotnetProcess (arguments: string) = processStart "dotnet" arguments
-
-
+            
     let tryToCreateOutputDirectory (unvalidatedPath: string) : Result<ValidatedPath, ApplicationError> =
         printfn $"Creating output directory: %s{unvalidatedPath}..."
 
         try
-            let sanitizedPath =
-                if OperatingSystem.IsWindows() then
-                    unvalidatedPath
-                else
-                    // dotnet can't handle linux '~', so we need to replace it with the user's home directory
-                    unvalidatedPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
-
+            let sanitizedPath = sanitizePath unvalidatedPath
             let path = Path.GetFullPath(sanitizedPath)
             let output = Directory.CreateDirectory(path)
             output.FullName |> ValidatedPath |> Ok
