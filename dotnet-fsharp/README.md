@@ -8,4 +8,6 @@
     - ~~testing~~
     - creating an artifact (see `dotnet publish`)
 - improve output project validation (maybe use `Verify`?)
+- add tests for f# project setup
+- maybe add Husky.NET fantomas hooks to git?
 - If everything works: maybe create a nuget package?
