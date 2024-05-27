@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
@@ -25,11 +24,6 @@
         <Content Include="resources\.gitattributes.template">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Update="FSharp.Core" Version="8.0.300"/>
-        <PackageReference Include="FsToolkit.ErrorHandling" Version="4.15.2"/>
     </ItemGroup>
 
 </Project>
