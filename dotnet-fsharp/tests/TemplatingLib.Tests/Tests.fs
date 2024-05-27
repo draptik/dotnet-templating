@@ -1,6 +1,5 @@
 module Tests
 
-open System.IO
 open Xunit
 open Swensen.Unquote
 
@@ -76,11 +75,10 @@ let ``process valid - invalid arguments`` () =
         | DotNetProcessError _ -> true =! true
         | _ -> true =! false
 
+let resourceDirectory = "../../../../../src/TemplatingLib/resources"
+
 [<Fact>]
 let ``workflow - happy case`` () =
-    let resourceDirectory =
-        Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
-
     let validSolutionName = TemplatingLib.Constants.defaultSolutionName
     let validOutputDirectory = TemplatingLib.Constants.defaultOutputDirectory
 
@@ -93,9 +91,6 @@ let ``workflow - happy case`` () =
 
 [<Fact>]
 let ``workflow - invalid solution name`` () =
-    let resourceDirectory =
-        Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
-
     let invalidSolutionName = ""
     let validOutputDirectory = TemplatingLib.Constants.defaultOutputDirectory
 
@@ -111,9 +106,6 @@ let ``workflow - invalid solution name`` () =
 
 [<Fact>]
 let ``workflow - invalid output path`` () =
-    let resourceDirectory =
-        Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
-
     let validSolutionName = TemplatingLib.Constants.defaultSolutionName
     let invalidOutputDirectory = ""
 
