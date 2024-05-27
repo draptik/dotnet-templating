@@ -1,6 +1,5 @@
 ﻿namespace TemplatingLib
 
-open System
 open System.Diagnostics
 open System.IO
 open FsToolkit.ErrorHandling
@@ -38,7 +37,7 @@ module Io =
             )
 
     let startDotnetProcess (arguments: string) = processStart "dotnet" arguments
-            
+
     let tryToCreateOutputDirectory (unvalidatedPath: string) : Result<ValidatedPath, ApplicationError> =
         printfn $"Creating output directory: %s{unvalidatedPath}..."
 

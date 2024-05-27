@@ -80,7 +80,7 @@ let sanitizePath (unvalidatedPath: string) =
     else
         // dotnet can't handle linux '~', so we need to replace it with the user's home directory
         unvalidatedPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
-        
+
 let unwrapProjectCreationInputs (inputs: ProjectCreationInputs) =
     let projectType = convertProjectTypeToString inputs.ProjectType
     let projectName = ValidName.value inputs.ProjectName
