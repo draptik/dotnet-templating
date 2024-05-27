@@ -5,7 +5,7 @@ open Microsoft.FSharp.Core
 
 
 [<Literal>]
-let defaultResourceDirectory = "../TemplatingLib/resources"
+let defaultResourceDirectory = "resources"
 
 [<Literal>]
 let defaultSolutionName = "Foo"
