@@ -115,7 +115,7 @@ let ``workflow - invalid output path`` () =
         Path.Combine("../../..", TemplatingLib.Constants.defaultResourceDirectory)
 
     let validSolutionName = TemplatingLib.Constants.defaultSolutionName
-    let invalidOutputDirectory = "/test"
+    let invalidOutputDirectory = ""
 
     let actual =
         workflow validSolutionName invalidOutputDirectory (getDefaultTemplates resourceDirectory)

@@ -44,10 +44,13 @@ module Io =
         printfn $"Creating output directory: %s{unvalidatedPath}..."
 
         try
-            // dotnet can't handle linux '~', so we need to replace it with the user's home directory
             let sanitizedPath =
-                unvalidatedPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
-
+                if OperatingSystem.IsWindows() then
+                    unvalidatedPath
+                else
+                    // dotnet can't handle linux '~', so we need to replace it with the user's home directory
+                    unvalidatedPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
+                    
             let path = Path.GetFullPath(sanitizedPath)
             let output = Directory.CreateDirectory(path)
             output.FullName |> ValidatedPath |> Ok
