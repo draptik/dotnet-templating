@@ -12,5 +12,5 @@
 - Switch to the folder where you want to create the new solution (e.g. `cd ~/tmp/here`)
   ```sh
   cd ~/tmp/here
-  ~/tmp/dotnet-template/scripts/create.sh YourProjectName TargetFolderName
+  ~/tmp/dotnet-template/scripts/setup.sh YourProjectName TargetFolderName
   ```
