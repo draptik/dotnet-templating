@@ -13,9 +13,10 @@ Using CPM solves many pain points I have with dotnet development:
 
 I want to fire up a solution from the command line before I start the IDE. This way I have "my setup".
 
-Idea: 
+Here are 2 different implementations:
 
-- I'll probably start with a simple bash script.
+- bash: see folder [scripts](/scripts/README.md)
+- fsharp: see folder [dotnet-fsharp](./dotnet-fsharp/README.md)
 
 ## My template - what I care about
 
