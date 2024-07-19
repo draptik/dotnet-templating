@@ -123,8 +123,8 @@ module Io =
         let ext = languageToConfigExtension language
         $"{path}.{ext}"
 
-    let tryRemoveFirstXmlProp language path fn errType =
-        let file = getConfigFile language path
+    let tryModifyingDotnetXmlConfig language unmodifiedConfigFile fn errType =
+        let file = getConfigFile language unmodifiedConfigFile
 
         try
             let xmlString = File.ReadAllText file
@@ -133,11 +133,11 @@ module Io =
         with e ->
             Error(errType e.Message)
 
-    let tryRemovePropertyGroupFromFile (language: Language) (path: ValidatedPath) =
-        tryRemoveFirstXmlProp language path removeFirstPropertyGroupFromXml CantRemovePropertyGroup
+    let tryRemovePropertyGroupFromFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
+        tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeFirstPropertyGroupFromXml CantRemovePropertyGroup
 
-    let tryRemoveItemGroupFromFile (language: Language) (path: ValidatedPath) =
-        tryRemoveFirstXmlProp language path removeFirstItemGroupFromXml CantRemoveItemGroup
+    let tryRemoveItemGroupFromFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
+        tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeFirstItemGroupFromXml CantRemoveItemGroup
 
     let workflow solutionName outputDirectory (templates: Templates) =
 
