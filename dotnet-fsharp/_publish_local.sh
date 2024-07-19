@@ -1,9 +1,16 @@
 #!/bin/sh
+#
+# This script creates an executable file (`APPLICATION_NAME` below) and a "resource" folder.
+#
+# The results are created in: `./out/<timestamp>/`.
 
 APPLICATION_NAME='TemplatingConsole'
-DOTNET_BUILD_FOLDER="./out"
-RUNTIME='linux-x64'
+
+RUNTIME='linux-x64' # any valid dotnet runtime
 FRAMEWORK='net8.0'
+
+CURRENT_DATE=$(date +%Y-%m-%d-%T)
+OUTPUT_FOLDER="./out/${CURRENT_DATE}"
 
 dotnet publish \
         --configuration Release \
@@ -13,5 +20,9 @@ dotnet publish \
         -p DebugType=None \
         -p DebugSymbols=false \
         --self-contained \
-        --output ${DOTNET_BUILD_FOLDER} \
+        --output "${OUTPUT_FOLDER}" \
         src/${APPLICATION_NAME}
+
+# cleanup:
+# sometimes (?) there is a file `TemplatingLib.xml` in the output which is not needed
+rm "${OUTPUT_FOLDER}/TemplatingLib.xml"
