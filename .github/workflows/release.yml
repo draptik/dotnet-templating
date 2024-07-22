@@ -41,11 +41,11 @@ jobs:
             # Pack to zip for Windows
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
-          tar czvf "${release_name}.tar.gz" "$release_name"
+          tar czvf "${release_name}.tar.gz" "${release_name}"
           fi
 
           # Delete output directory
-          rm -r "$release_name"
+          rm -r "${release_name}"
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
