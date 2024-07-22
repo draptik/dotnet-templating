@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 
 APPLICATION_NAME='TemplatingConsole'
 
