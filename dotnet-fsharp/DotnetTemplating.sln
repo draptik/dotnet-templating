@@ -27,7 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionF
 		.gitignore = .gitignore
 		global.json = global.json
 		README.md = README.md
-		..\publish.sh = ..\publish.sh
 		_publish_local.sh = _publish_local.sh
 	EndProjectSection
 EndProject
