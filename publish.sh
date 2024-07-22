@@ -5,6 +5,7 @@ APPLICATION_NAME='TemplatingConsole'
 RUNTIME=$1
 FRAMEWORK=$2
 OUTPUT_FOLDER=$3
+CODE_FOLDER="dotnet-fsharp"
 
 dotnet publish \
         --configuration Release \
@@ -15,4 +16,4 @@ dotnet publish \
         -p DebugSymbols=false \
         --self-contained \
         --output "${OUTPUT_FOLDER}" \
-        src/${APPLICATION_NAME}
+        ${CODE_FOLDER}/src/${APPLICATION_NAME}
