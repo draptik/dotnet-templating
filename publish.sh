@@ -16,7 +16,3 @@ dotnet publish \
         --self-contained \
         --output "${OUTPUT_FOLDER}" \
         src/${APPLICATION_NAME}
-
-# cleanup:
-# sometimes (?) there is a file `TemplatingLib.xml` in the output which is not needed
-rm "${OUTPUT_FOLDER}/TemplatingLib.xml"
