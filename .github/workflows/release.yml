@@ -43,6 +43,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: "${application_name}*"
+          files: "TemplatingConsole*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
