@@ -28,7 +28,7 @@ jobs:
           release_name="${application_name}-${tag}-${{ matrix.target }}"
 
           # Build everything
-          ./publish.sh ${runtime} ${framework} ${release_name}
+          cd ./dotnet-fsharp && ./publish.sh ${runtime} ${framework} ${release_name}
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
