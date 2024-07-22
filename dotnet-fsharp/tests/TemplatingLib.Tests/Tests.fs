@@ -117,3 +117,36 @@ let ``workflow - invalid output path`` () =
         match e with
         | CantCreateOutputDirectory _ -> true =! true
         | _ -> true =! false
+
+[<Fact>]
+let ``removing a property group from an xml file works`` () =
+    
+    let removeFromXml (xml: string) (element: string) =
+        let doc = System.Xml.Linq.XDocument.Parse xml
+        let head = doc.Descendants(element) |> Seq.head
+        head.Remove()
+        doc.ToString()
+
+    let sample = "<root><childX>x</childX></root>"
+    let expected = "<root />"
+    
+    let actual = removeFromXml sample "childX"
+
+    actual =! expected
+    
+[<Fact>]
+let ``removing a property group from an xml file containing a certain sub-element`` () =
+    
+    let removeFromXml (xml: string) (element: string) (filter: string) =
+        let doc = System.Xml.Linq.XDocument.Parse xml
+        let bla = doc.
+        let head =  bla |> Seq.head
+        head.Remove()
+        doc.ToString()
+
+    let sample = "<root><childX>x</childX><childX><Needle>x</Needle></childX></root>"
+    let expected = "<root><childX>x</childX></root>"
+    
+    let actual = removeFromXml sample "childX" "Needle"
+
+    actual =! expected
