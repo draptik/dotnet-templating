@@ -46,6 +46,18 @@ jobs:
 
           # Delete output directory
           rm -r "${release_name}"
+      - name: Set SHA (non-window)
+        if: matrix.kind == 'macOS' || matrix.kind == 'linux'
+        run: |
+          for filename in *.tar.gz; do
+            shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*}_sha256_checksum.txt
+          done
+      - name: Set SHA (window)
+        if: matrix.kind == 'windows'
+        run: |
+          for filename in *.zip; do
+            shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*}_sha256_checksum.txt
+          done
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
