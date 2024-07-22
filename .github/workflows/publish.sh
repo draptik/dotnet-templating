@@ -1,8 +1,5 @@
 #!/bin/bash
 #
-# This script creates an executable file `APPLICATION_NAME` (see below) and a "resource" folder.
-#
-# The results are created in a timestamped folder: `OUTPUT_FOLDER` (see below). 
 
 APPLICATION_NAME='TemplatingConsole'
 
