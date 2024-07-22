@@ -24,7 +24,7 @@ jobs:
           tag=$(git describe --tags --abbrev=0)
           application_name="TemplatingConsole"
           runtime="${{ matrix.target }}"
-          framework="8.0.x"
+          framework="net8.0"
           release_name="${application_name}-${tag}-${{ matrix.target }}"
 
           # Build everything
