@@ -49,20 +49,18 @@ module Io =
         with e ->
             Error(CantCreateOutputDirectory e.Message)
 
+    let appendForce b = if b then " --force" else ""
+
     let tryToCreateDotnetProjectWithoutRestore
         (projectCreationInputs: ProjectCreationInputs)
         : Result<ValidatedPath, ApplicationError> =
         let name, projectType, lang, path, forceOverwrite =
             unwrapProjectCreationInputs projectCreationInputs
 
-        let mutable args =
-            $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore"
-
-        if forceOverwrite then
-            args <- args + " --force"
+        let args =
+            $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore%s{appendForce forceOverwrite}"
 
         printfn $"Creating project with args: %s{args}"
-
         startDotnetProcess args
         |> Result.mapError id
         |> Result.map (fun _ -> Path.Combine(path, name) |> ValidatedPath)
@@ -76,19 +74,11 @@ module Io =
 
         match configType with
         | GlobalJson ->
-            let mutable args =
-                $"new %s{config} --sdk-version %s{Constants.latestLts} --roll-forward %s{Constants.rollForwardPolicy} --output %s{path}"
-
-            if forceOverwrite then
-                args <- args + " --force"
-
+            let args =
+                $"new %s{config} --sdk-version %s{Constants.latestLts} --roll-forward %s{Constants.rollForwardPolicy} --output %s{path}%s{appendForce forceOverwrite}"
             startDotnetProcess args
         | _ ->
-            let mutable args = $"new %s{config} --output %s{path}"
-
-            if forceOverwrite then
-                args <- args + " --force"
-
+            let args = $"new %s{config} --output %s{path}%s{appendForce forceOverwrite}"
             startDotnetProcess args
 
     let tryCopy (source: string) (target: string) =
