@@ -1,5 +1,7 @@
 # Scripting notes
 
+This was my original Proof of Concept (PoC)...
+
 ## Requirements
 
 - bash
