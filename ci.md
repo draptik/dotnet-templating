@@ -12,7 +12,7 @@
   - [x] creating an online artifact (see `dotnet publish`)
   - [x] build for all plattforms
   - [x] add sha sums for generated artifacts
-  - [ ] add main `.editorconfig` (for `yml`, `md`, etc)
+  - [x] add main `.editorconfig` (for `yml`, `md`, etc)
   - [ ] cleanup/improve workflows
   - [ ] linting (fantomas), Husky? git-hook? Best practices?
   - [ ] research:
