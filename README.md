@@ -15,7 +15,7 @@ I want to fire up a solution from the command line before I start the IDE. This 
 
 Here are 2 different implementations:
 
-- bash: see folder [scripts](/scripts/README.md)
+- proof-of-concept in bash: see folder [bash-poc](/bash-poc/README.md)
 - fsharp: see folder [dotnet-fsharp](./dotnet-fsharp/README.md)
 
 ## My template - what I care about
