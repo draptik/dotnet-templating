@@ -21,11 +21,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      working-directory: ./dotnet-fsharp
+      working-directory: ./code
       run: dotnet restore
     - name: Build
-      working-directory: ./dotnet-fsharp
+      working-directory: ./code
       run: dotnet build --no-restore
     - name: Test
-      working-directory: ./dotnet-fsharp
+      working-directory: ./code
       run: dotnet test --no-build --verbosity normal
