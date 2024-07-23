@@ -3,9 +3,14 @@ module Arguments
 open System.IO
 open Argu
 
+type Language =
+  | Csharp
+  | Fsharp
+  
 type CliArguments =
     | [<AltCommandLine("-n"); Unique; Mandatory>] Solution_Name of name: string
     | [<AltCommandLine("-o"); Unique; Mandatory>] Output_Directory of path: string
+    | [<AltCommandLine("-l"); Unique>] Language of Language
     | [<AltCommandLine("-r"); Unique>] Resource_Directory of path: string
     | [<AltCommandLine("-f"); Unique>] Force of bool
 
@@ -14,6 +19,7 @@ type CliArguments =
             match s with
             | Solution_Name _ -> "The name of the solution to create"
             | Output_Directory _ -> "The directory where the project will be created"
+            | Language _ -> "The language used. Options: c#, f# (defaults to c#)"
             | Resource_Directory _ -> "The directory where the resources are located (defaults to 'resources')"
             | Force _ -> "Force overwrite of existing files (defaults to true)"
 
@@ -27,3 +33,6 @@ let getSolutionName (results: ParseResults<CliArguments>) =
 
 let getOutputDirectory (results: ParseResults<CliArguments>) =
     results.GetResult(Output_Directory, defaultValue = TemplatingLib.Constants.defaultOutputDirectory)
+
+let getLanguage (results: ParseResults<CliArguments>) =
+  results.GetResult(Language, defaultValue = Language.Csharp)

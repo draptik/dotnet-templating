@@ -4,7 +4,7 @@ open System.Diagnostics
 open System.IO
 open FsToolkit.ErrorHandling
 open Errors
-open Types
+open TemplatingLib.Types
 
 module Io =
 
@@ -129,7 +129,7 @@ module Io =
     let tryRemoveItemGroupFromFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
         tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeFirstItemGroupFromXml CantRemoveItemGroup
 
-    let workflow solutionName outputDirectory (templates: Templates) =
+    let workflow solutionName outputDirectory (selectedLanguage: Language) (templates: Templates)  =
 
         let rootBuildPropsTemplate = templates.RootBuildProps
         let srcDirBuildPropsTemplate = templates.SrcDirBuildProps
@@ -137,8 +137,6 @@ module Io =
         let rootPackagesTemplate = templates.RootPackagesProps
         let gitAttributesTemplate = templates.GitAttributes
         let forceOverWrite = templates.ForceOverwrite
-
-        let selectedLanguage = Language.CSharp
 
         // short hands for constants
         let srcFolder = Constants.src
