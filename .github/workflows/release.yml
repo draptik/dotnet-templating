@@ -55,11 +55,10 @@ jobs:
       - name: Set SHA (window)
         if: matrix.kind == 'windows'
         run: |
-          for filename in *.zip
-          do
+          for ($filename in *.zip) {
             $outname = [string]::Concat((Get-Item $filename).Basename, "_sha256_checksum.txt")
             (certutil -hashfile $filename SHA256 | findstr /V ":")> $outname
-          done
+          }
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
