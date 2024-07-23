@@ -52,13 +52,14 @@ jobs:
           for filename in *.tar.gz; do
             shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*.*}_sha256_checksum.txt
           done
-      # - name: Set SHA (window)
-      #   if: matrix.kind == 'windows'
-      #   run: |
-      #     # TODO must be translated to powershell syntax...!
-      #     for filename in *.zip; do
-      #       shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*.*}_sha256_checksum.txt
-      #     done
+      - name: Set SHA (window)
+        if: matrix.kind == 'windows'
+        run: |
+          for filename in *.zip
+          do
+            $outname = [string]::Concat((Get-Item $filename).Basename, "_sha256_checksum.txt")
+            (certutil -hashfile $filename SHA256 | findstr /V ":")> $outname
+          done
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
