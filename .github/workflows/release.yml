@@ -55,7 +55,7 @@ jobs:
       - name: Set SHA (window)
         if: matrix.kind == 'windows'
         run: |
-          for ($filename in *.zip) {
+          foreach ($filename in *.zip) {
             $outname = [string]::Concat((Get-Item $filename).Basename, "_sha256_checksum.txt")
             (certutil -hashfile $filename SHA256 | findstr /V ":")> $outname
           }
