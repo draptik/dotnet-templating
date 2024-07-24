@@ -5,7 +5,7 @@ APPLICATION_NAME='TemplatingConsole'
 RUNTIME=$1
 FRAMEWORK=$2
 OUTPUT_FOLDER=$3
-CODE_FOLDER="dotnet-fsharp"
+CODE_FOLDER="code"
 
 dotnet publish \
         --configuration Release \
