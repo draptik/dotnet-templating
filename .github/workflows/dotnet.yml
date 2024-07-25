@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  CODE_DIRECTORY: ./code
+
 jobs:
   build:
 
@@ -23,21 +26,21 @@ jobs:
         dotnet-version: 8.0.x
     
     - name: Restore dotnet tools
-      working-directory: ./code
+      working-directory: $CODE_DIRECTORY
       run: dotnet tool restore
     
     - name: Lint F# (Fantomas)
-      working-directory: ./code
+      working-directory: $CODE_DIRECTORY
       run: dotnet fantomas .
     
     - name: Restore dependencies
-      working-directory: ./code
+      working-directory: $CODE_DIRECTORY
       run: dotnet restore
     
     - name: Build
-      working-directory: ./code
+      working-directory: $CODE_DIRECTORY
       run: dotnet build --no-restore
     
     - name: Test
-      working-directory: ./code
+      working-directory: $CODE_DIRECTORY
       run: dotnet test --no-build --verbosity normal
