@@ -16,16 +16,28 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    
+    - name: Restore dotnet tools
+      working-directory: ./code
+      run: dotnet tool restore
+    
+    - name: Lint F# (Fantomas)
+      working-directory: ./code
+      run: dotnet fantomas .
+    
     - name: Restore dependencies
       working-directory: ./code
       run: dotnet restore
+    
     - name: Build
       working-directory: ./code
       run: dotnet build --no-restore
+    
     - name: Test
       working-directory: ./code
       run: dotnet test --no-build --verbosity normal
