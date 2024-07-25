@@ -21,9 +21,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
       - name: Build
         shell: bash
         run: |
@@ -33,7 +35,7 @@ jobs:
           framework="net8.0"
           release_name="${application_name}-${tag}-${{ matrix.target }}"
 
-          # Build everything
+          # Publish everything
           ./publish.sh ${runtime} ${framework} ${release_name}
 
           # Pack files
@@ -46,12 +48,14 @@ jobs:
 
           # Delete output directory
           rm -r "${release_name}"
+
       - name: Set SHA (non-window)
         if: matrix.kind == 'macOS' || matrix.kind == 'linux'
         run: |
           for filename in *.tar.gz; do
             shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*.*}_sha256_checksum.txt
           done
+
       - name: Set SHA (window)
         if: matrix.kind == 'windows'
         run: |
@@ -59,6 +63,7 @@ jobs:
             $outname = [string]::Concat((Get-Item $filename).Basename, "_sha256_checksum.txt")
             (certutil -hashfile $filename SHA256 | findstr /V ":")> $outname
           }
+
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
