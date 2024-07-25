@@ -26,21 +26,21 @@ jobs:
         dotnet-version: 8.0.x
     
     - name: Restore dotnet tools
-      working-directory: $CODE_DIRECTORY
+      working-directory: ${{ env.CODE_DIRECTORY }}
       run: dotnet tool restore
     
     - name: Lint F# (Fantomas)
-      working-directory: $CODE_DIRECTORY
+      working-directory: ${{ env.CODE_DIRECTORY }}
       run: dotnet fantomas .
     
     - name: Restore dependencies
-      working-directory: $CODE_DIRECTORY
+      working-directory: ${{ env.CODE_DIRECTORY }}
       run: dotnet restore
     
     - name: Build
-      working-directory: $CODE_DIRECTORY
+      working-directory: ${{ env.CODE_DIRECTORY }}
       run: dotnet build --no-restore
     
     - name: Test
-      working-directory: $CODE_DIRECTORY
+      working-directory: ${{ env.CODE_DIRECTORY }}
       run: dotnet test --no-build --verbosity normal
