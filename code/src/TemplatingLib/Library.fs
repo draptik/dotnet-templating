@@ -61,6 +61,7 @@ module Io =
             $"new %s{projectType} --name %s{name} --output %s{path} --language %s{lang} --no-restore%s{appendForce forceOverwrite}"
 
         printfn $"Creating project with args: %s{args}"
+
         startDotnetProcess args
         |> Result.mapError id
         |> Result.map (fun _ -> Path.Combine(path, name) |> ValidatedPath)
@@ -76,6 +77,7 @@ module Io =
         | GlobalJson ->
             let args =
                 $"new %s{config} --sdk-version %s{Constants.latestLts} --roll-forward %s{Constants.rollForwardPolicy} --output %s{path}%s{appendForce forceOverwrite}"
+
             startDotnetProcess args
         | _ ->
             let args = $"new %s{config} --output %s{path}%s{appendForce forceOverwrite}"
@@ -124,12 +126,16 @@ module Io =
             Error(errType e.Message)
 
     let tryRemovePropertyGroupFromFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
-        tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeFirstPropertyGroupFromXml CantRemovePropertyGroup
+        tryModifyingDotnetXmlConfig
+            language
+            unmodifiedConfigFile
+            removeFirstPropertyGroupFromXml
+            CantRemovePropertyGroup
 
     let tryRemoveItemGroupFromFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
         tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeFirstItemGroupFromXml CantRemoveItemGroup
 
-    let workflow solutionName outputDirectory (selectedLanguage: Language) (templates: Templates)  =
+    let workflow solutionName outputDirectory (selectedLanguage: Language) (templates: Templates) =
 
         let rootBuildPropsTemplate = templates.RootBuildProps
         let srcDirBuildPropsTemplate = templates.SrcDirBuildProps

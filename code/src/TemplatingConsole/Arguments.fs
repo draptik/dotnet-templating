@@ -4,9 +4,9 @@ open System.IO
 open Argu
 
 type Language =
-  | Csharp
-  | Fsharp
-  
+    | Csharp
+    | Fsharp
+
 type CliArguments =
     | [<AltCommandLine("-n"); Unique; Mandatory>] Solution_Name of name: string
     | [<AltCommandLine("-o"); Unique; Mandatory>] Output_Directory of path: string
@@ -35,4 +35,4 @@ let getOutputDirectory (results: ParseResults<CliArguments>) =
     results.GetResult(Output_Directory, defaultValue = TemplatingLib.Constants.defaultOutputDirectory)
 
 let getLanguage (results: ParseResults<CliArguments>) =
-  results.GetResult(Language, defaultValue = Language.Csharp)
+    results.GetResult(Language, defaultValue = Language.Csharp)

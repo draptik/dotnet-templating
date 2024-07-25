@@ -120,7 +120,7 @@ let ``workflow - invalid output path`` () =
 
 [<Fact>]
 let ``removing a property group from an xml file works`` () =
-    
+
     let removeFromXml (xml: string) (element: string) =
         let doc = System.Xml.Linq.XDocument.Parse xml
         let head = doc.Descendants(element) |> Seq.head
@@ -129,7 +129,7 @@ let ``removing a property group from an xml file works`` () =
 
     let sample = "<root><childX>x</childX></root>"
     let expected = "<root />"
-    
+
     let actual = removeFromXml sample "childX"
 
     actual =! expected
