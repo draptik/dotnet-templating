@@ -33,4 +33,4 @@ From the [docs](https://fsprojects.github.io/fantomas/docs/end-users/GitHooks.ht
 
 ## CI
 
-- [ ] TODO research: maybe add to build pipeline?
+- fantomas is included in the default build pipeline
