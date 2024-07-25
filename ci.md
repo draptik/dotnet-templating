@@ -2,6 +2,18 @@
 
 - Current CI system: Github w/ Github Actions.
 
+## Creating a release
+
+I'm still learning the basics of GH-Actions.
+
+- Create git tag on the `main` branch
+- Click on "Releases" -> "Create a new release", then select the git tag from the previous step...
+- current workflow on local machine:
+  - `git commit`..
+  - `git tag v0.0.xx`
+  - `git push --atomic origin main v0.0.xx`
+  - browser: see above
+
 ## TODOs
 
 - [x] create a published artifact using `dotnet publish`
