@@ -32,7 +32,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Build
+      - name: Build (dotnet publish & tar.gz / zip)
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
@@ -52,7 +52,7 @@ jobs:
 
           # Delete output directory
           rm -r "${release_name}"
-
+  
       - name: Set SHA (non-window)
         if: matrix.kind == 'macOS' || matrix.kind == 'linux'
         run: |
