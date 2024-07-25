@@ -13,7 +13,7 @@
   - [x] build for all plattforms
   - [x] add sha sums for generated artifacts
   - [x] add main `.editorconfig` (for `yml`, `md`, etc)
-  - [ ] cleanup/improve workflows
+  - [x] cleanup/improve workflows
   - [x] linting (fantomas) I'll skip Husky / git-hook for now
   - [ ] research:
     - automate releases?
