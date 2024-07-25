@@ -1,5 +1,12 @@
 #!/bin/bash
 
+set -euo pipefail
+
+if [ $# -ne 3 ]; 
+  then echo "Provide 3 arguments: runtime, framework, and output folder"
+  exit 1
+fi
+
 APPLICATION_NAME='TemplatingConsole'
 
 RUNTIME=$1
