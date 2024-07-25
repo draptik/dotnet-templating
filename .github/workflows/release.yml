@@ -53,14 +53,14 @@ jobs:
           # Delete output directory
           rm -r "${release_name}"
   
-      - name: Set SHA (non-window)
+      - name: Set SHA (macOS & linux)
         if: matrix.kind == 'macOS' || matrix.kind == 'linux'
         run: |
           for filename in *.tar.gz; do
             shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*.*}${{ env.CHECKSUM_SUFFIX }}
           done
 
-      - name: Set SHA (window)
+      - name: Set SHA (windows)
         if: matrix.kind == 'windows'
         run: |
           foreach ($filename in (Get-ChildItem "*.zip")) {
