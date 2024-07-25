@@ -12,11 +12,7 @@ Using CPM solves many pain points I have with dotnet development:
 - harmonize `src` and `test` projects
 
 I want to fire up a solution from the command line before I start the IDE. This way I have "my setup".
-
-Here are 2 different implementations:
-
-- proof-of-concept in bash: see folder [bash-poc](/bash-poc/README.md)
-- fsharp: see folder [dotnet-fsharp](./dotnet-fsharp/README.md)
+So what does my setup look like?
 
 ## My template - what I care about
 
