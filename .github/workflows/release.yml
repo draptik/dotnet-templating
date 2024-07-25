@@ -1,8 +1,14 @@
+name: Release
+
 on:
   release:
     types: [published]
 
-name: Release
+env:
+  APPLICATION_NAME: TemplatingConsole
+  TARGET_FRAMEWORK: net8.0
+  CHECKSUM_SUFFIX: _sha256_checksum.txt
+
 jobs:
   release:
     strategy:
@@ -30,13 +36,11 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          application_name="TemplatingConsole"
           runtime="${{ matrix.target }}"
-          framework="net8.0"
-          release_name="${application_name}-${tag}-${{ matrix.target }}"
+          release_name="${{ env.APPLICATION_NAME }}-${tag}-${{ matrix.target }}"
 
           # Publish everything
-          ./publish.sh ${runtime} ${framework} ${release_name}
+          ./publish.sh ${runtime} ${{ env.TARGET_FRAMEWORK }} ${release_name}
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
@@ -53,20 +57,20 @@ jobs:
         if: matrix.kind == 'macOS' || matrix.kind == 'linux'
         run: |
           for filename in *.tar.gz; do
-            shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*.*}_sha256_checksum.txt
+            shasum -a 256 ${filename} | awk '{printf $1}' > ${filename%.*.*}${{ env.CHECKSUM_SUFFIX }}
           done
 
       - name: Set SHA (window)
         if: matrix.kind == 'windows'
         run: |
           foreach ($filename in (Get-ChildItem "*.zip")) {
-            $outname = [string]::Concat((Get-Item $filename).Basename, "_sha256_checksum.txt")
+            $outname = [string]::Concat((Get-Item $filename).Basename, "${{ env.CHECKSUM_SUFFIX }}")
             (certutil -hashfile $filename SHA256 | findstr /V ":")> $outname
           }
 
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: "TemplatingConsole*"
+          files: "${{ env.APPLICATION_NAME }}*"
         env:
           GITHUB_TOKEN: ${{ secrets.TEMPLATING_TOKEN }}
