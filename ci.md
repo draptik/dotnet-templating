@@ -14,7 +14,7 @@
   - [x] add sha sums for generated artifacts
   - [x] add main `.editorconfig` (for `yml`, `md`, etc)
   - [ ] cleanup/improve workflows
-  - [ ] linting (fantomas), Husky? git-hook? Best practices?
+  - [x] linting (fantomas) I'll skip Husky / git-hook for now
   - [ ] research:
     - automate releases?
     - prevent pushing to main branch?
