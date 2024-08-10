@@ -133,3 +133,15 @@ let ``removing a property group from an xml file works`` () =
     let actual = removeFromXml sample "childX"
 
     actual =! expected
+
+[<Fact>]
+let ``removing an ItemGroup with child elements of type PackageReference from an xml file works`` () =
+
+    let sample =
+        "<root><ItemGroup><Foo>x</Foo></ItemGroup><ItemGroup><PackageReference>y</PackageReference></ItemGroup></root>"
+
+    let expected = "<root>\n  <ItemGroup>\n    <Foo>x</Foo>\n  </ItemGroup>\n</root>"
+
+    let actual = removeItemGroupWithPackagesFromXml sample
+
+    actual =! expected

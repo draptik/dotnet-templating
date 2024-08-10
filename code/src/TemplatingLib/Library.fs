@@ -101,15 +101,30 @@ module Io =
         printfn $"Creating dependency: %s{addTo} depends on %s{validDependentPath} ..."
         startDotnetProcess $"add %s{addTo} reference %s{validDependentPath}" |> Ok
 
-    let removeFromXml (xml: string) (element: string) =
+    let removeFirstElementFromXml (xml: string) (element: string) =
         let doc = System.Xml.Linq.XDocument.Parse xml
         let head = doc.Descendants(element) |> Seq.head
         head.Remove()
         doc.ToString()
 
-    let removeFirstPropertyGroupFromXml (xml: string) = removeFromXml xml "PropertyGroup"
+    let removeElementWithChildFromXml (xml: string) (element: string) (childName: string) =
+        let doc = System.Xml.Linq.XDocument.Parse xml
 
-    let removeFirstItemGroupFromXml (xml: string) = removeFromXml xml "ItemGroup"
+        let matchingElement =
+            doc.Descendants(element)
+            |> Seq.tryFind (fun ig -> ig.Elements() |> Seq.exists (fun e -> e.Name.LocalName = childName))
+
+        match matchingElement with
+        | Some elementToRemove -> elementToRemove.Remove()
+        | None -> ()
+
+        doc.ToString()
+
+    let removeFirstPropertyGroupFromXml (xml: string) =
+        removeFirstElementFromXml xml "PropertyGroup"
+
+    let removeItemGroupWithPackagesFromXml (xml: string) =
+        removeElementWithChildFromXml xml "ItemGroup" "PackageReference"
 
     let getConfigFile (language: Language) (path: ValidatedPath) =
         let ext = languageToConfigExtension language
@@ -133,7 +148,7 @@ module Io =
             CantRemovePropertyGroup
 
     let tryRemoveItemGroupFromFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
-        tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeFirstItemGroupFromXml CantRemoveItemGroup
+        tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeItemGroupWithPackagesFromXml CantRemoveItemGroup
 
     let workflow solutionName outputDirectory (selectedLanguage: Language) (templates: Templates) =
 
