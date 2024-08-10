@@ -6,6 +6,7 @@ open Swensen.Unquote
 open TemplatingLib.Io
 open TemplatingLib.Errors
 open TemplatingLib.Types
+open TemplatingLib.Xml
 
 let isOk result =
     match result with
