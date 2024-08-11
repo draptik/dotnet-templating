@@ -1,0 +1,6 @@
+# Xml files
+[*.xml]
+indent_size = 2
+
+[*.{fs,fsproj}]
+indent_size = 4

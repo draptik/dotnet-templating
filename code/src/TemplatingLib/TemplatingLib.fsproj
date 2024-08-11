@@ -25,6 +25,9 @@
         <Content Include="resources\.gitattributes.template">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Include="resources\.editorconfig.fsharp.template">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

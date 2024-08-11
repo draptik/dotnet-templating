@@ -86,7 +86,8 @@ module Io =
 
     let tryCopy (source: string) (target: string) =
         try
-            File.Copy(source, target, overwrite = true) |> Ok
+            File.Copy(source, target, overwrite = true)
+            Ok $"File copied from {source} to {target}."
         with e ->
             Error(CantCopyResource(source, target, e.Message))
 
@@ -109,6 +110,7 @@ module Io =
         let testsDirBuildPropsTemplate = templates.TestDirBuildProps
         let rootPackagesTemplate = templates.RootPackagesProps
         let gitAttributesTemplate = templates.GitAttributes
+        let editorConfigFsharpTemplate = templates.EditorConfigFsharp
         let forceOverWrite = templates.ForceOverwrite
 
         // short hands for constants
@@ -117,6 +119,7 @@ module Io =
         let directoryBuildProps = Constants.DirectoryBuildProps
         let directoryPackagesProps = Constants.DirectoryPackagesProps
         let gitAttributes = Constants.gitAttributes
+        let editorConfig = Constants.editorConfig
         let defaultLibName = Constants.defaultLibName
         let defaultLibTestName = Constants.defaultLibTestName
 
@@ -128,8 +131,15 @@ module Io =
             let! _ = tryToCreateOutputDirectory (Path.Combine(outputPath, testsFolder))
 
             let! _ = tryCreateConfigFile GitIgnore outputPath forceOverWrite
-            let! _ = tryCreateConfigFile EditorConfig outputPath forceOverWrite
             let! _ = tryCreateConfigFile GlobalJson outputPath forceOverWrite
+
+            // editorconfig: F# is very simple compared to C#
+            // - C#: Use the `editorconfig` tool (`dotnet new editorconfig`)
+            // - F#: Copy simple template
+            let! _ =
+                match selectedLanguage with
+                | CSharp -> tryCreateConfigFile EditorConfig outputPath forceOverWrite
+                | FSharp -> tryCopy editorConfigFsharpTemplate (Path.Combine(outputPath, editorConfig))
 
             let! _ = tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, directoryBuildProps))
             let! _ = tryCopy rootPackagesTemplate (Path.Combine(outputPath, directoryPackagesProps))

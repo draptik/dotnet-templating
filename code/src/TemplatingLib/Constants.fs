@@ -32,6 +32,9 @@ let DirectoryPackagesProps = "Directory.Packages.props"
 let gitAttributes = ".gitattributes"
 
 [<Literal>]
+let editorConfig = ".editorconfig"
+
+[<Literal>]
 let defaultLibName = "MyLib"
 
 [<Literal>]
