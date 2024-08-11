@@ -10,5 +10,6 @@
     <Nullable>enable</Nullable>
     <NeutralLanguage>en</NeutralLanguage>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
