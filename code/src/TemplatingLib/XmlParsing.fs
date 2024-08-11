@@ -1,19 +1,20 @@
 namespace TemplatingLib
 
 open System.IO
+open System.Xml.Linq
 open Errors
 open TemplatingLib.Types
 
 module Xml =
 
     let removeFirstElementFromXml (xml: string) (element: string) =
-        let doc = System.Xml.Linq.XDocument.Parse xml
+        let doc = XDocument.Parse xml
         let head = doc.Descendants(element) |> Seq.head
         head.Remove()
         doc.ToString()
 
     let removeElementWithChildFromXml (xml: string) (element: string) (childName: string) =
-        let doc = System.Xml.Linq.XDocument.Parse xml
+        let doc = XDocument.Parse xml
 
         let matchingElement =
             doc.Descendants(element)
@@ -54,3 +55,20 @@ module Xml =
 
     let tryRemoveItemGroupFromFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
         tryModifyingDotnetXmlConfig language unmodifiedConfigFile removeItemGroupWithPackagesFromXml CantRemoveItemGroup
+
+
+    let addElement (xml: string) (elementToAdd: XElement) =
+        let doc = XDocument.Parse xml
+        doc.Root.Add elementToAdd
+        doc.ToString()
+
+    let addGeneratedDocumentationFile xml =
+        let elementToAdd = XElement("PropertyGroup", XElement("GenerateDocumentationFile", "true"))
+        addElement xml elementToAdd
+        
+    let tryAddPropertyGroupGenerateDocumentationFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
+        tryModifyingDotnetXmlConfig
+            language
+            unmodifiedConfigFile
+            addGeneratedDocumentationFile
+            CantAddGeneratePropertyGroupWithDocumentationFile

@@ -12,3 +12,4 @@ type ApplicationError =
     | CantRemoveItemGroup of string
     | CantStartProcess of string
     | DotNetProcessError of string
+    | CantAddGeneratePropertyGroupWithDocumentationFile of string

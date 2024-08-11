@@ -163,6 +163,7 @@ module Io =
                       ProjectCreationInputs.ForceOverWrite = forceOverWrite }
 
             let! _ = libProject |> tryRemovePropertyGroupFromFile selectedLanguage
+            let! _ = libProject |> tryAddPropertyGroupGenerateDocumentationFile selectedLanguage
 
             let testProjectName = ValidName.appendTo validSolutionName defaultLibTestName
 
