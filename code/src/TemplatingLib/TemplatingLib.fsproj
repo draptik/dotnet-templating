@@ -19,6 +19,9 @@
         <Content Include="resources\Directory.Packages.props.template">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Include="resources\Directory.Packages.props.fsharp.template">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
         <Content Include="resources\Directory.Build.props.template">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

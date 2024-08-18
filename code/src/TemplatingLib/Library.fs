@@ -109,6 +109,7 @@ module Io =
         let srcDirBuildPropsTemplate = templates.SrcDirBuildProps
         let testsDirBuildPropsTemplate = templates.TestDirBuildProps
         let rootPackagesTemplate = templates.RootPackagesProps
+        let rootPackagesFsharpTemplate = templates.RootPackagesPropsFsharp
         let gitAttributesTemplate = templates.GitAttributes
         let editorConfigFsharpTemplate = templates.EditorConfigFsharp
         let forceOverWrite = templates.ForceOverwrite
@@ -141,8 +142,15 @@ module Io =
                 | CSharp -> tryCreateConfigFile EditorConfig outputPath forceOverWrite
                 | FSharp -> tryCopy editorConfigFsharpTemplate (Path.Combine(outputPath, editorConfig))
 
+            // Directory.Packages.props
+            // Only difference between C# and F#:
+            // F# requires FSharp.Core...
+            let! _ =
+                match selectedLanguage with
+                | CSharp -> tryCopy rootPackagesTemplate (Path.Combine(outputPath, directoryPackagesProps))
+                | FSharp -> tryCopy rootPackagesFsharpTemplate (Path.Combine(outputPath, directoryPackagesProps))
+
             let! _ = tryCopy rootBuildPropsTemplate (Path.Combine(outputPath, directoryBuildProps))
-            let! _ = tryCopy rootPackagesTemplate (Path.Combine(outputPath, directoryPackagesProps))
             let! _ = tryCopy gitAttributesTemplate (Path.Combine(outputPath, gitAttributes))
             let! _ = tryCopy srcDirBuildPropsTemplate (Path.Combine(outputPath, srcFolder, directoryBuildProps))
             let! _ = tryCopy testsDirBuildPropsTemplate (Path.Combine(outputPath, testsFolder, directoryBuildProps))
