@@ -63,9 +63,11 @@ module Xml =
         doc.ToString()
 
     let addGeneratedDocumentationFile xml =
-        let elementToAdd = XElement("PropertyGroup", XElement("GenerateDocumentationFile", "true"))
+        let elementToAdd =
+            XElement("PropertyGroup", XElement("GenerateDocumentationFile", "true"))
+
         addElement xml elementToAdd
-        
+
     let tryAddPropertyGroupGenerateDocumentationFile (language: Language) (unmodifiedConfigFile: ValidatedPath) =
         tryModifyingDotnetXmlConfig
             language

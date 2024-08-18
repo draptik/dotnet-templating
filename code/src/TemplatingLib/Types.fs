@@ -111,7 +111,7 @@ let getDefaultTemplates resourceDirectory =
 
     let editorConfigFsharp =
         Path.Combine(resourceDirectory, $"{Constants.editorConfig}.fsharp.template")
-    
+
     let srcDirBuildPropsTemplate =
         Path.Combine(resourceDirectory, Constants.src, $"{Constants.DirectoryBuildProps}.template")
 
@@ -123,5 +123,5 @@ let getDefaultTemplates resourceDirectory =
       TestDirBuildProps = testsDirBuildPropsTemplate
       RootPackagesProps = rootPackagesTemplate
       GitAttributes = gitAttributesTemplate
-      EditorConfigFsharp = editorConfigFsharp 
+      EditorConfigFsharp = editorConfigFsharp
       ForceOverwrite = forceOverwrite }

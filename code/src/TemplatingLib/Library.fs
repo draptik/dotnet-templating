@@ -3,7 +3,7 @@
 open System.Diagnostics
 open System.IO
 open FsToolkit.ErrorHandling
-open Errors
+open TemplatingLib.Errors
 open TemplatingLib.Types
 open TemplatingLib.Xml
 

@@ -1,9 +1,9 @@
 <Project>
-    <Import Project="$([MsBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
+  <Import Project="$([MsBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
 
-    <ItemGroup>
-        <PackageReference Include="FSharp.Core"/>
-        <PackageReference Include="FsToolkit.ErrorHandling"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core"/>
+    <PackageReference Include="FsToolkit.ErrorHandling"/>
+  </ItemGroup>
 
 </Project>
