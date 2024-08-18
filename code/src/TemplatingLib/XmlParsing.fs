@@ -2,7 +2,7 @@ namespace TemplatingLib
 
 open System.IO
 open System.Xml.Linq
-open Errors
+open TemplatingLib.Errors
 open TemplatingLib.Types
 
 module Xml =
