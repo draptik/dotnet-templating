@@ -86,9 +86,9 @@ OPTIONS:
     --output-directory, -o <path>
                           The directory where the project will be created
     --language, -l <csharp|fsharp>
-                          The language used. Options: c#, f# (defaults to c#)
+                          The language used. Options: csharp, fsharp (defaults to csharp)
     --resource-directory, -r <path>
-                          The directory where the resources are located (defaults to 'resources')
+                          The directory where the resources are located (defaults to location of executable + './resources')
     --force, -f <bool>    Force overwrite of existing files (defaults to true)
     --help                display this list of options.
 
