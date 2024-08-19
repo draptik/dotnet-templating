@@ -23,6 +23,9 @@ type CliArguments =
             | Resource_Directory _ -> "The directory where the resources are located (defaults to 'resources')"
             | Force _ -> "Force overwrite of existing files (defaults to true)"
 
+// TODO The default path must include the path to the executable
+// Example: Calling the exe from another folder than the folder the exe is located in will currently try to get
+// the resources from `./resources` which will fail.
 let getResourceDirectory (results: ParseResults<CliArguments>) =
     Path.GetFullPath(
         results.GetResult(Resource_Directory, defaultValue = TemplatingLib.Constants.defaultResourceDirectory)
