@@ -19,16 +19,17 @@ type CliArguments =
             match s with
             | Solution_Name _ -> "The name of the solution to create"
             | Output_Directory _ -> "The directory where the project will be created"
-            | Language _ -> "The language used. Options: c#, f# (defaults to c#)"
-            | Resource_Directory _ -> "The directory where the resources are located (defaults to 'resources')"
+            | Language _ -> "The language used. Options: csharp, fsharp (defaults to csharp)"
+            | Resource_Directory _ ->
+                "The directory where the resources are located (defaults to location of executable + './resources')"
             | Force _ -> "Force overwrite of existing files (defaults to true)"
 
-// TODO The default path must include the path to the executable
-// Example: Calling the exe from another folder than the folder the exe is located in will currently try to get
-// the resources from `./resources` which will fail.
-let getResourceDirectory (results: ParseResults<CliArguments>) =
+let getResourceDirectory (results: ParseResults<CliArguments>) resourceBaseDir =
     Path.GetFullPath(
-        results.GetResult(Resource_Directory, defaultValue = TemplatingLib.Constants.defaultResourceDirectory)
+        results.GetResult(
+            Resource_Directory,
+            defaultValue = Path.Combine(resourceBaseDir, TemplatingLib.Constants.defaultResourceDirectoryName)
+        )
     )
 
 let getSolutionName (results: ParseResults<CliArguments>) =

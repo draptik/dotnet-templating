@@ -32,11 +32,11 @@ let main argv =
     let results = parser.ParseCommandLine argv
     let sln = getSolutionName results
     let outDir = getOutputDirectory results
-    let resDir = getResourceDirectory results
+    let resDir = getResourceDirectory results AppDomain.CurrentDomain.BaseDirectory
     let templates = getDefaultTemplates resDir
     let language = getLanguage results |> mapLang
-
+    
     let result = workflow sln outDir language templates
-
+    
     printfn $"Workflow: %A{result}"
     0

@@ -5,7 +5,7 @@ open Microsoft.FSharp.Core
 
 
 [<Literal>]
-let defaultResourceDirectory = "resources"
+let defaultResourceDirectoryName = "resources"
 
 [<Literal>]
 let defaultSolutionName = "Foo"
