@@ -35,8 +35,8 @@ let main argv =
     let resDir = getResourceDirectory results AppDomain.CurrentDomain.BaseDirectory
     let templates = getDefaultTemplates resDir
     let language = getLanguage results |> mapLang
-    
+
     let result = workflow sln outDir language templates
-    
+
     printfn $"Workflow: %A{result}"
     0
